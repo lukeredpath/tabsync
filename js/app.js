@@ -12,9 +12,9 @@ const THEME_KEY = 'tabsync-theme';
 const THEME_CYCLE = [null, 'dark', 'light'];
 
 const THEME_META = {
-  null:    { icon: '⊙', title: 'System theme (click for dark)' },
-  dark:    { icon: '☀', title: 'Dark theme (click for light)' },
-  light:   { icon: '☾', title: 'Light theme (click for system)' },
+  system: { icon: '⊙', title: 'System theme (click for dark)' },
+  dark:   { icon: '☀', title: 'Dark theme (click for light)' },
+  light:  { icon: '☾', title: 'Light theme (click for system)' },
 };
 
 function applyTheme(theme) {
@@ -25,7 +25,7 @@ function applyTheme(theme) {
   }
   const btn = document.getElementById('theme-toggle-btn');
   if (btn) {
-    const meta = THEME_META[theme] ?? THEME_META[null];
+    const meta = THEME_META[theme ?? 'system'];
     btn.textContent = meta.icon;
     btn.title = meta.title;
   }
