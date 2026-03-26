@@ -8,40 +8,42 @@ import { initPlayer }    from './player.js';
 
 const THEME_KEY = 'tabsync-theme';
 
+// Cycle: null (system) → 'dark' → 'light' → null (system)
+const THEME_CYCLE = [null, 'dark', 'light'];
+
+const THEME_META = {
+  null:    { icon: '⊙', title: 'System theme (click for dark)' },
+  dark:    { icon: '☀', title: 'Dark theme (click for light)' },
+  light:   { icon: '☾', title: 'Light theme (click for system)' },
+};
+
 function applyTheme(theme) {
   if (theme) {
     document.documentElement.setAttribute('data-theme', theme);
   } else {
     document.documentElement.removeAttribute('data-theme');
   }
-  // Update toggle button icon
   const btn = document.getElementById('theme-toggle-btn');
   if (btn) {
-    const isDark = theme === 'dark' ||
-      (!theme && !window.matchMedia('(prefers-color-scheme: light)').matches);
-    btn.textContent = isDark ? '☀' : '☾';
-    btn.title = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+    const meta = THEME_META[theme] ?? THEME_META[null];
+    btn.textContent = meta.icon;
+    btn.title = meta.title;
   }
 }
 
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
+  const saved = localStorage.getItem(THEME_KEY) || null;
   applyTheme(saved);
 
   document.getElementById('theme-toggle-btn').addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme');
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    let next;
-    if (!current) {
-      // Following system — flip to opposite of system
-      next = systemDark ? 'light' : 'dark';
-    } else if (current === 'dark') {
-      next = 'light';
+    const current = document.documentElement.getAttribute('data-theme') || null;
+    const idx = THEME_CYCLE.indexOf(current);
+    const next = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length];
+    if (next === null) {
+      localStorage.removeItem(THEME_KEY);
     } else {
-      next = 'dark';
+      localStorage.setItem(THEME_KEY, next);
     }
-    localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
   });
 }
