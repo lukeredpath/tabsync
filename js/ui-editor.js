@@ -5,6 +5,7 @@ import { getLibrary, createTrack, updateTrack } from './library.js';
 import { extractVideoId, fetchOEmbed } from './utils.js';
 
 let editingTrackId = null;
+let openSnapshot = null; // form state at the time the editor was opened
 
 // ── Helpers ──
 
@@ -249,6 +250,31 @@ function handleSubmit() {
   closeEditor();
 }
 
+// ── Dirty state ──
+
+function formSnapshot() {
+  return JSON.stringify({
+    title:      $('ef-title').value,
+    artist:     $('ef-artist').value,
+    tabUrl:     $('ef-tab-url').value,
+    tabStart:   $('ef-tab-start').value,
+    audioUrl:   $('ef-audio-url').value,
+    audioStart: $('ef-audio-start').value,
+    folder:     $('ef-folder').value,
+    difficulty: selectedDifficulty,
+    favourite:  isFavourite,
+  });
+}
+
+function isDirty() {
+  return openSnapshot !== null && formSnapshot() !== openSnapshot;
+}
+
+function tryClose() {
+  if (isDirty() && !confirm('Discard unsaved changes?')) return;
+  closeEditor();
+}
+
 // ── Open / close ──
 
 export function openEditor(track = null) {
@@ -278,6 +304,9 @@ export function openEditor(track = null) {
 
   $('editor-overlay').removeAttribute('hidden');
 
+  // Snapshot the form state so we can detect unsaved changes on close
+  openSnapshot = formSnapshot();
+
   // Focus first empty required field
   const first = [$('ef-title'), $('ef-artist'), $('ef-tab-url')].find(el => !el.value);
   (first ?? $('ef-title')).focus();
@@ -286,6 +315,7 @@ export function openEditor(track = null) {
 function closeEditor() {
   $('editor-overlay').setAttribute('hidden', '');
   editingTrackId = null;
+  openSnapshot = null;
 }
 
 // ── Init ──
@@ -303,17 +333,17 @@ export function initEditorUI() {
   $('ef-tab-url').addEventListener('blur', handleTabUrlBlur);
   $('ef-audio-url').addEventListener('blur', handleAudioUrlBlur);
 
-  $('ef-cancel').addEventListener('click', closeEditor);
+  $('ef-cancel').addEventListener('click', tryClose);
   $('ef-submit').addEventListener('click', handleSubmit);
 
   // Close on backdrop click (not modal click)
   $('editor-overlay').addEventListener('click', e => {
-    if (e.target === $('editor-overlay')) closeEditor();
+    if (e.target === $('editor-overlay')) tryClose();
   });
 
   // Close on Escape
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !$('editor-overlay').hasAttribute('hidden')) closeEditor();
+    if (e.key === 'Escape' && !$('editor-overlay').hasAttribute('hidden')) tryClose();
   });
 
   document.addEventListener('tabsync:editor-open', e => {
