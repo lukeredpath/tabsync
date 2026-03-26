@@ -48,9 +48,30 @@ function initTheme() {
   });
 }
 
+// ── Help panel ──
+
+function initHelp() {
+  const overlay = document.getElementById('help-overlay');
+  document.getElementById('help-btn').addEventListener('click', () => {
+    overlay.removeAttribute('hidden');
+  });
+  document.getElementById('help-close-btn').addEventListener('click', () => {
+    overlay.setAttribute('hidden', '');
+  });
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.setAttribute('hidden', '');
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !overlay.hasAttribute('hidden')) {
+      overlay.setAttribute('hidden', '');
+    }
+  });
+}
+
 // ── Init ──
 
 initTheme();
+initHelp();
 initLibraryUI();
 initEditorUI();
 initPlayer();

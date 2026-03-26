@@ -106,6 +106,7 @@ body {
   letter-spacing: 0.04em;
 }
 
+#help-btn,
 #theme-toggle-btn,
 #sidebar-collapse-btn {
   background: none;
@@ -117,8 +118,11 @@ body {
   border-radius: 4px;
 }
 
+#help-btn:hover,
 #theme-toggle-btn:hover,
 #sidebar-collapse-btn:hover { color: var(--text); background: var(--surface-alt); }
+
+#help-btn { font-weight: 700; }
 
 /* ── Sidebar open button (shown when collapsed) ── */
 #sidebar-open-btn {
@@ -715,3 +719,75 @@ body.sidebar-collapsed #sidebar-open-btn {
 }
 
 .btn-secondary:hover { background: var(--border); color: var(--text); }
+
+/* ── Help modal ── */
+#help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+#help-overlay[hidden] { display: none; }
+
+#help-modal {
+  background: var(--surface);
+  border: 1px solid var(--border-mid);
+  border-radius: 10px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 20px 24px 24px;
+}
+
+#help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+#help-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+#help-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+#help-close-btn:hover { color: var(--text); background: var(--surface-alt); }
+
+#help-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#help-table tr + tr td { padding-top: 10px; }
+
+#help-table td:first-child {
+  width: 40%;
+  padding-right: 16px;
+}
+
+#help-table td { font-size: 13px; color: var(--text-mid); vertical-align: middle; }
+
+kbd {
+  display: inline-block;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-mid);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 2px 7px;
+  color: var(--text);
+}

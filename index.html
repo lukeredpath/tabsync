@@ -12,6 +12,7 @@
   <aside id="sidebar">
     <header id="sidebar-header">
       <span class="app-title">TabSync</span>
+      <button id="help-btn" title="Keyboard shortcuts">?</button>
       <button id="theme-toggle-btn" title="Toggle light/dark theme">&#9790;</button>
       <button id="sidebar-collapse-btn" title="Collapse library">&#x2715;</button>
     </header>
@@ -77,6 +78,24 @@
     </div>
 
   </main>
+
+  <!-- ── Help modal ── -->
+  <div id="help-overlay" hidden>
+    <div id="help-modal">
+      <div id="help-header">
+        <h2>Keyboard Shortcuts</h2>
+        <button id="help-close-btn" title="Close">&#x2715;</button>
+      </div>
+      <table id="help-table">
+        <tbody>
+          <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
+          <tr><td><kbd>R</kbd></td><td>Restart from beginning</td></tr>
+          <tr><td><kbd>←</kbd></td><td>Skip back 5 seconds</td></tr>
+          <tr><td><kbd>→</kbd></td><td>Skip forward 5 seconds</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <!-- ── Editor modal ── -->
   <div id="editor-overlay" hidden>
