@@ -18,9 +18,6 @@ let currentTrack = null;
 
 let isPlaying = false;
 let syncInterval = null;
-let playStartWallTime  = null;
-let playStartTabTime   = null;
-let playStartAudioTime = null;
 
 const SYNC_INTERVAL_MS = 1000;
 const SYNC_THRESHOLD   = 0.4;  // seconds
@@ -240,11 +237,6 @@ function seek(delta) {
 
 function startSync() {
   if (!audioPlayer) return; // tab-only: nothing to sync
-
-  playStartWallTime  = performance.now() / 1000;
-  playStartTabTime   = tabPlayer.getCurrentTime();
-  playStartAudioTime = audioPlayer.getCurrentTime();
-
   stopSync();
   syncInterval = setInterval(syncTick, SYNC_INTERVAL_MS);
 }
@@ -252,13 +244,12 @@ function startSync() {
 function syncTick() {
   if (!isPlaying || !audioPlayer) return;
 
-  const elapsed       = performance.now() / 1000 - playStartWallTime;
-  const expectedTab   = playStartTabTime   + elapsed;
-  const expectedAudio = playStartAudioTime + elapsed;
+  // Tab player is the master — never seek it during sync.
+  // Compute where the audio player should be relative to the tab player,
+  // accounting for the independent start offsets of each video.
+  const offsetDiff    = currentTrack.audioStart - currentTrack.tabStart;
+  const expectedAudio = tabPlayer.getCurrentTime() + offsetDiff;
 
-  if (Math.abs(tabPlayer.getCurrentTime()   - expectedTab)   > SYNC_THRESHOLD) {
-    tabPlayer.seekTo(expectedTab, true);
-  }
   if (Math.abs(audioPlayer.getCurrentTime() - expectedAudio) > SYNC_THRESHOLD) {
     audioPlayer.seekTo(expectedAudio, true);
   }
