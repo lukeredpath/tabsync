@@ -336,9 +336,15 @@ export function initEditorUI() {
   $('ef-cancel').addEventListener('click', tryClose);
   $('ef-submit').addEventListener('click', handleSubmit);
 
-  // Close on backdrop click (not modal click)
+  // Close on backdrop click — but only if mousedown also started on the backdrop.
+  // Without this guard, mousedown inside the modal then mouseup outside fires a
+  // click on the overlay (lowest common ancestor), incorrectly dismissing the modal.
+  let backdropMousedown = false;
+  $('editor-overlay').addEventListener('mousedown', e => {
+    backdropMousedown = e.target === $('editor-overlay');
+  });
   $('editor-overlay').addEventListener('click', e => {
-    if (e.target === $('editor-overlay')) tryClose();
+    if (e.target === $('editor-overlay') && backdropMousedown) tryClose();
   });
 
   // Close on Escape
