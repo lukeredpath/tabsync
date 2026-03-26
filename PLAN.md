@@ -78,21 +78,20 @@ Delivered alongside Phase 1 scaffold.
 
 ---
 
-### Phase 4 — Player (`player.js`)
+### Phase 4 — Player (`player.js`) ✅
 
-- [ ] Port YouTube IFrame API setup and dual-player construction from prototype
-- [ ] `loadTrack(track)` — builds/replaces players for the given track config
-- [ ] Seek to start offsets via `seekTo` in `onReady`
-- [ ] Mute tab player when audio video is present
-- [ ] Show/hide audio overlay based on whether audio video is configured
-- [ ] Sync engine: wall-clock anchor, 1s interval, 0.4s drift threshold
-- [ ] Controls: play/pause, restart, ±5s skip
-- [ ] Keyboard shortcuts: Space, ←/→, R
-- [ ] Draggable audio overlay (ported from prototype)
-- [ ] Auto-collapse library panel on play; re-open button remains accessible
-- [ ] Error handling: embed-disabled video message
-
-**Exit criteria**: selecting a track from the library loads and plays it with correct sync behaviour.
+- [x] YouTube IFrame API bootstrap (inject script tag, `window.onYouTubeIframeAPIReady`)
+- [x] `loadTrack(track)` — increments `loadId` stale guard, tears down old iframes, builds new players
+- [x] Seek to fractional start offsets via `seekTo` in `onReady`; integer `start` playerVar as hint
+- [x] Mute tab player when audio video present; unmuted for tab-only
+- [x] Show/hide `#audio-container` based on whether audio video is configured
+- [x] Sync engine: wall-clock anchor, 1s interval, 0.4s drift threshold (no-op for tab-only)
+- [x] Controls: play/pause, restart, ±5s skip
+- [x] Keyboard shortcuts: Space, ←/→, R (ignored when input/select focused)
+- [x] Draggable audio overlay; position persists across track changes
+- [x] `tabsync:playback-started` dispatched on `play()` → sidebar auto-collapses
+- [x] Error handling: YouTube error codes mapped to readable messages; controls stay disabled
+- [x] `pendingTrack` path for track selected before API network response returns
 
 ---
 
