@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TabSync</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ── Sidebar ── -->
+  <aside id="sidebar">
+    <header id="sidebar-header">
+      <span class="app-title">TabSync</span>
+      <button id="sidebar-collapse-btn" title="Collapse library">&#x2715;</button>
+    </header>
+
+    <div id="sidebar-search">
+      <input type="search" id="search-input" placeholder="Search tracks…" autocomplete="off" />
+    </div>
+
+    <nav id="folder-nav">
+      <!-- Populated by ui-library.js -->
+    </nav>
+
+    <div id="track-list">
+      <!-- Populated by ui-library.js -->
+    </div>
+
+    <footer id="sidebar-footer">
+      <button id="add-track-btn" class="btn btn-primary">+ Add Track</button>
+    </footer>
+  </aside>
+
+  <!-- ── Sidebar collapsed tab ── -->
+  <button id="sidebar-open-btn" title="Open library" aria-label="Open library">&#9776;</button>
+
+  <!-- ── Main ── -->
+  <main id="main">
+
+    <!-- Stage: video fills this area -->
+    <div id="stage">
+      <div id="tab-container">
+        <div id="placeholder">
+          <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+          <p>Select a track from the library to get started</p>
+        </div>
+      </div>
+
+      <!-- Audio overlay (hidden until a track with audio is loaded) -->
+      <div id="audio-container" hidden>
+        <div id="audio-label">Audio</div>
+        <div id="audio-player-wrapper"></div>
+      </div>
+    </div>
+
+    <!-- Controls bar -->
+    <div id="controls">
+      <button class="ctrl-btn" id="rewind-btn" disabled title="Restart (R)">&#x21A9; Restart</button>
+      <button class="ctrl-btn" id="skip-back-btn" disabled title="Skip back (←)">&#x2212;5s</button>
+      <button class="ctrl-btn ctrl-btn--primary" id="play-pause-btn" disabled>&#x25B6; Play</button>
+      <button class="ctrl-btn" id="skip-fwd-btn" disabled title="Skip forward (→)">+5s</button>
+      <div id="status">No track loaded</div>
+    </div>
+
+  </main>
+
+  <!-- ── Editor modal ── -->
+  <div id="editor-overlay" hidden>
+    <div id="editor-modal">
+      <!-- Populated by ui-editor.js -->
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
