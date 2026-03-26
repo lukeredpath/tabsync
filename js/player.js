@@ -17,10 +17,6 @@ let playersNeeded = 0;          // 1 (tab-only) or 2 (tab+audio)
 let currentTrack = null;
 
 let isPlaying = false;
-let syncInterval = null;
-
-const SYNC_INTERVAL_MS = 1000;
-const SYNC_THRESHOLD   = 0.4;  // seconds
 
 let drag = { active: false, startX: 0, startY: 0, origX: 0, origY: 0 };
 
@@ -183,7 +179,6 @@ function play() {
   isPlaying = true;
   elPlayPause.textContent = '⏸ Pause';
   setStatus('Playing');
-  startSync();
   document.dispatchEvent(new CustomEvent('tabsync:playback-started'));
 }
 
@@ -192,7 +187,6 @@ function pause() {
   tabPlayer.pauseVideo();
   if (audioPlayer) audioPlayer.pauseVideo();
   isPlaying = false;
-  stopSync();
   elPlayPause.textContent = '▶ Play';
   setStatus('Paused');
 }
@@ -213,7 +207,6 @@ function seek(delta) {
   if (wasPlaying) {
     tabPlayer.pauseVideo();
     if (audioPlayer) audioPlayer.pauseVideo();
-    stopSync();
   }
 
   tabPlayer.seekTo(tabPlayer.getCurrentTime() + delta, true);
@@ -227,37 +220,8 @@ function seek(delta) {
       isPlaying = true;
       elPlayPause.textContent = '⏸ Pause';
       setStatus('Playing');
-      startSync();
-      // No re-dispatch of tabsync:playback-started — sidebar already collapsed
     }, 150);
   }
-}
-
-// ── Sync engine ──
-
-function startSync() {
-  if (!audioPlayer) return; // tab-only: nothing to sync
-  stopSync();
-  syncInterval = setInterval(syncTick, SYNC_INTERVAL_MS);
-}
-
-function syncTick() {
-  if (!isPlaying || !audioPlayer) return;
-
-  // Tab player is the master — never seek it during sync.
-  // Compute where the audio player should be relative to the tab player,
-  // accounting for the independent start offsets of each video.
-  const offsetDiff    = currentTrack.audioStart - currentTrack.tabStart;
-  const expectedAudio = tabPlayer.getCurrentTime() + offsetDiff;
-
-  if (Math.abs(audioPlayer.getCurrentTime() - expectedAudio) > SYNC_THRESHOLD) {
-    audioPlayer.seekTo(expectedAudio, true);
-  }
-}
-
-function stopSync() {
-  clearInterval(syncInterval);
-  syncInterval = null;
 }
 
 // ── Draggable audio overlay ──

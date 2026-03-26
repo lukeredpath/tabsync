@@ -97,7 +97,7 @@ Schema version is checked on load; a migration path should be defined for future
 
 - **Tab video**: fills the main stage area, muted if an audio video is configured.
 - **Audio video**: small draggable overlay (bottom-right default position), visible only when an audio video is configured.
-- **Sync engine**: wall-clock anchored. On play, records wall-clock time and both players' current positions.
+- **Sync engine**: none — both players are started simultaneously and left to play freely. No automatic seeking during playback; any drift is accepted rather than risk interrupting practice with a jump.
 - **Controls**:
   - Play / Pause
   - Restart (seek both players to their configured start offsets)
