@@ -47,7 +47,7 @@ ES modules (`type="module"`) — no bundler needed in modern Chrome.
   - `stop`: reads `.server.pid`, kills the process, removes the file
 - [ ] `.gitignore` (`.server.pid`, `.deleted/`)
 - [ ] `index.html` shell with layout regions: sidebar, stage, controls bar
-- [ ] `styles.css` skeleton matching the dark theme from the prototype
+- [ ] `styles.css` skeleton with dark/light themes via CSS custom properties (`prefers-color-scheme` default + `data-theme` override; toggle button persists choice to `localStorage`)
 
 **Exit criteria**: `make start` serves the page; layout regions are visible.
 

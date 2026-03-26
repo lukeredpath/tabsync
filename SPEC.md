@@ -22,28 +22,28 @@ Works for any tab-based practice: bass, guitar, or otherwise.
 
 ### Track
 
-| Field | Type | Notes |
-|---|---|---|
-| `id` | UUID string | Generated on creation |
-| `title` | string | Required |
-| `artist` | string | Required |
-| `tabVideoId` | string | YouTube video ID, required |
-| `tabStart` | number | Seconds, 0.1s precision |
+| Field          | Type           | Notes                      |
+| -------------- | -------------- | -------------------------- |
+| `id`           | UUID string    | Generated on creation      |
+| `title`        | string         | Required                   |
+| `artist`       | string         | Required                   |
+| `tabVideoId`   | string         | YouTube video ID, required |
+| `tabStart`     | number         | Seconds, 0.1s precision    |
 | `audioVideoId` | string \| null | YouTube video ID, optional |
-| `audioStart` | number | Seconds, 0.1s precision |
-| `folderId` | string \| null | Reference to a Folder id |
-| `favourite` | boolean | |
-| `difficulty` | 1–5 \| null | |
-| `createdAt` | ISO timestamp | |
-| `updatedAt` | ISO timestamp | |
+| `audioStart`   | number         | Seconds, 0.1s precision    |
+| `folderId`     | string \| null | Reference to a Folder id   |
+| `favourite`    | boolean        |                            |
+| `difficulty`   | 1–5 \| null    |                            |
+| `createdAt`    | ISO timestamp  |                            |
+| `updatedAt`    | ISO timestamp  |                            |
 
 ### Folder
 
-| Field | Type | Notes |
-|---|---|---|
-| `id` | UUID string | |
-| `name` | string | |
-| `createdAt` | ISO timestamp | |
+| Field       | Type          | Notes |
+| ----------- | ------------- | ----- |
+| `id`        | UUID string   |       |
+| `name`      | string        |       |
+| `createdAt` | ISO timestamp |       |
 
 Folders are flat (one level only — no subfolders).
 
@@ -97,7 +97,7 @@ Schema version is checked on load; a migration path should be defined for future
 
 - **Tab video**: fills the main stage area, muted if an audio video is configured.
 - **Audio video**: small draggable overlay (bottom-right default position), visible only when an audio video is configured.
-- **Sync engine**: wall-clock anchored. On play, records wall-clock time and both players' current positions. A 1-second interval checks each player's actual position against the expected position; if drift exceeds 0.4s, `seekTo` corrects it.
+- **Sync engine**: wall-clock anchored. On play, records wall-clock time and both players' current positions.
 - **Controls**:
   - Play / Pause
   - Restart (seek both players to their configured start offsets)
@@ -106,6 +106,12 @@ Schema version is checked on load; a migration path should be defined for future
   - `Space` — play/pause
   - `←` / `→` — skip ±5s
   - `R` — restart
+
+### Theming
+
+- Light and dark colour schemes, implemented via CSS custom properties.
+- Defaults to the system preference (`prefers-color-scheme`).
+- A toggle button in the sidebar header lets the user override; the choice is persisted in `localStorage`.
 
 ### Known constraints (carried over from prototype)
 
@@ -130,10 +136,10 @@ Schema version is checked on load; a migration path should be defined for future
 
 ### Makefile targets
 
-| Target | Description |
-|---|---|
+| Target       | Description                                                                           |
+| ------------ | ------------------------------------------------------------------------------------- |
 | `make start` | Start Python 3 HTTP server (port 8080), open `http://<hostname>.local:8080` in Safari |
-| `make stop` | Kill the server process |
+| `make stop`  | Kill the server process                                                               |
 
 Port is configurable via a `PORT` variable (default `8080`).
 
