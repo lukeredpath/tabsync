@@ -70,7 +70,6 @@ function onYouTubeIframeAPIReady() {
 function loadTrack(track) {
   const myLoadId = ++loadId;
 
-  stopSync();
   isPlaying = false;
   tabPlayer = null;
   audioPlayer = null;
