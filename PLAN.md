@@ -2,15 +2,15 @@
 
 ## Tech Stack
 
-| Concern | Choice | Rationale |
-|---|---|---|
-| Markup / styling | HTML + CSS (vanilla) | No build step, no dependencies |
-| Logic | Vanilla JS (ES modules) | Sufficient for this scale; no framework overhead |
-| Persistence | `localStorage` | Zero-dependency, fits a personal library of hundreds of tracks |
-| YouTube playback | IFrame API (CDN) | Required for player control |
-| Metadata fetch | YouTube oEmbed (CORS-enabled) | No API key needed |
-| Local server | Python 3 `http.server` | Always available on macOS |
-| Task runner | `make` | Universal on macOS |
+| Concern          | Choice                        | Rationale                                                      |
+| ---------------- | ----------------------------- | -------------------------------------------------------------- |
+| Markup / styling | HTML + CSS (vanilla)          | No build step, no dependencies                                 |
+| Logic            | Vanilla JS (ES modules)       | Sufficient for this scale; no framework overhead               |
+| Persistence      | `localStorage`                | Zero-dependency, fits a personal library of hundreds of tracks |
+| YouTube playback | IFrame API (CDN)              | Required for player control                                    |
+| Metadata fetch   | YouTube oEmbed (CORS-enabled) | No API key needed                                              |
+| Local server     | Python 3 `http.server`        | Always available on macOS                                      |
+| Task runner      | `make`                        | Universal on macOS                                             |
 
 ---
 
@@ -39,52 +39,42 @@ ES modules (`type="module"`) — no bundler needed in modern Chrome.
 
 ## Phases
 
-### Phase 1 — Project scaffold
+### Phase 1 — Project scaffold ✅
 
-- [ ] Create directory structure and placeholder files
-- [ ] `Makefile` with `start` and `stop` targets
-  - `start`: launches `python3 -m http.server $PORT`, writes PID to `.server.pid`, opens `http://$(hostname -s).local:$PORT` in Safari
-  - `stop`: reads `.server.pid`, kills the process, removes the file
-- [ ] `.gitignore` (`.server.pid`, `.deleted/`)
-- [ ] `index.html` shell with layout regions: sidebar, stage, controls bar
-- [ ] `styles.css` skeleton with dark/light themes via CSS custom properties (`prefers-color-scheme` default + `data-theme` override; toggle button persists choice to `localStorage`)
-
-**Exit criteria**: `make start` serves the page; layout regions are visible.
+- [x] Create directory structure and placeholder files
+- [x] `Makefile` with `start` and `stop` targets
+- [x] `.gitignore` (`.server.pid`, `.deleted/`)
+- [x] `index.html` shell with layout regions: sidebar, stage, controls bar
+- [x] `styles.css` skeleton with dark/light themes via CSS custom properties (`prefers-color-scheme` default + `data-theme` override; three-state toggle ⊙/☀/☾ persists to `localStorage`)
 
 ---
 
-### Phase 2 — Data layer (`library.js`)
+### Phase 2 — Data layer (`library.js`) ✅
 
-- [ ] Define TypeScript-style JSDoc types for `Track` and `Folder`
-- [ ] `loadLibrary()` — read and parse from localStorage; handle missing/malformed data gracefully
-- [ ] `saveLibrary()` — serialise and write back
-- [ ] Schema version check; stub migration path for future version bumps
-- [ ] CRUD: `createTrack`, `updateTrack`, `deleteTrack`
-- [ ] CRUD: `createFolder`, `updateFolder`, `deleteFolder` (cascade: unassign tracks in deleted folder)
-- [ ] Query helpers: `getTracksByFolder`, `getFavourites`, `searchTracks(query)`
+Delivered alongside Phase 1 scaffold.
 
-**Exit criteria**: data layer unit-testable in the browser console with no UI wired up.
+- [x] JSDoc types for `Track` and `Folder`
+- [x] `loadLibrary()` / `saveLibrary()` with graceful error handling
+- [x] Schema version check with stub migration path
+- [x] CRUD: `createTrack`, `updateTrack`, `deleteTrack`
+- [x] CRUD: `createFolder`, `updateFolder`, `deleteFolder` (orphans tracks)
+- [x] Query helpers: `getTracksByFolder`, `getFavourites`, `searchTracks`
+- [x] `exportLibrary()` / `importLibrary()` stubs
 
 ---
 
-### Phase 3 — Library UI (`ui-library.js`)
+### Phase 3 — Library UI (`ui-library.js`) + Editor (`ui-editor.js`) ✅
 
-- [ ] Sidebar panel with collapse/expand (CSS transition)
-- [ ] Folder list: "All tracks", "Favourites", then one entry per folder, plus "New folder" action
-- [ ] Track list rendering (title, artist, difficulty badge, favourite star, edit/delete)
-- [ ] Search bar wired to `searchTracks`
-- [ ] Sort controls (title, artist, difficulty, recently added)
-- [ ] Empty states
-- [ ] Clicking a track fires a `track:select` event (consumed by player in Phase 4)
-- [ ] Add/edit track form (`ui-editor.js`):
-  - URL input with oEmbed auto-fetch on blur
-  - Start offset inputs (step 0.1)
-  - Folder selector
-  - Favourite toggle
-  - Difficulty picker (1–5 or unset)
-  - Save / Cancel
-
-**Exit criteria**: full library management works; track data persists across page reloads.
+- [x] Sidebar collapse/expand (CSS transition, `#sidebar.collapsed`)
+- [x] Folder nav: "All tracks", "Favourites", per-folder entries, inline create/rename/delete
+- [x] Track list: title, artist, difficulty badge, favourite star toggle, edit/delete actions
+- [x] Search bar (real-time, case-insensitive)
+- [x] Sort strip: recently added / title A–Z / artist A–Z / difficulty
+- [x] Empty states (context-aware message per view)
+- [x] Track click dispatches `tabsync:track-selected` (ready for Phase 4)
+- [x] Add/edit modal (`ui-editor.js`): oEmbed auto-fetch on tab URL blur, start offset inputs (0.1s step), folder select, difficulty picker (1–5, clearable), favourite toggle, validation
+- [x] Inter-module communication via `CustomEvent` on `document` (`tabsync:` namespace)
+- [x] Auto-collapse sidebar on `tabsync:playback-started` (ready for Phase 4)
 
 ---
 
