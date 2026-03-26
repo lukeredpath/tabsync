@@ -17,11 +17,19 @@ let playersNeeded = 0;          // 1 (tab-only) or 2 (tab+audio)
 let currentTrack = null;
 
 let isPlaying = false;
+let atStart = false;           // true after load/restart — count-in applies only then
+
+let countInEnabled = false;
+let countInActive  = false;
+let countInTimer   = null;
+
+const COUNT_IN_KEY = 'tabsync-count-in';
 
 let drag = { active: false, startX: 0, startY: 0, origX: 0, origY: 0 };
 
 // Cached DOM refs (set in initPlayer)
 let elStatus, elPlayPause, elRewind, elSkipBack, elSkipFwd, elAudioContainer;
+let elCountInBtn, elCountdownOverlay, elCountdownNumber;
 
 // ── Helpers ──
 
@@ -146,6 +154,7 @@ function makeOnReady(capturedLoadId) {
       audioPlayer.pauseVideo();
     }
 
+    atStart = true;
     setControlsEnabled(true);
     setStatus('Ready');
   };
@@ -173,6 +182,7 @@ function makeOnError(capturedLoadId, label) {
 
 function play() {
   if (!tabPlayer) return;
+  atStart = false;
   tabPlayer.playVideo();
   if (audioPlayer) audioPlayer.playVideo();
   isPlaying = true;
@@ -190,13 +200,73 @@ function pause() {
   setStatus('Paused');
 }
 
+// ── Count-in ──
+
+function startCountIn() {
+  countInActive = true;
+  elCountdownOverlay.hidden = false;
+  setStatus('Count in…');
+
+  let count = 3;
+  elCountdownNumber.textContent = count;
+  // Re-trigger CSS animation on each tick by cloning the node
+  function animateTick() {
+    const fresh = elCountdownNumber.cloneNode(true);
+    elCountdownNumber.replaceWith(fresh);
+    elCountdownNumber = fresh;
+  }
+  animateTick();
+
+  function tick() {
+    count--;
+    if (count === 0) {
+      elCountdownOverlay.hidden = true;
+      countInActive = false;
+      countInTimer = null;
+      play();
+      return;
+    }
+    elCountdownNumber.textContent = count;
+    animateTick();
+    countInTimer = setTimeout(tick, 1000);
+  }
+
+  countInTimer = setTimeout(tick, 1000);
+}
+
+function cancelCountIn() {
+  if (!countInActive) return;
+  clearTimeout(countInTimer);
+  countInTimer = null;
+  countInActive = false;
+  elCountdownOverlay.hidden = true;
+  elPlayPause.textContent = '▶ Play';
+  setStatus('Paused');
+}
+
+function togglePlay() {
+  if (countInActive) {
+    cancelCountIn();
+    return;
+  }
+  if (isPlaying) {
+    pause();
+  } else if (countInEnabled && atStart) {
+    startCountIn();
+  } else {
+    play();
+  }
+}
+
 function restart() {
+  cancelCountIn();
   if (!tabPlayer || !currentTrack) return;
   const wasPlaying = isPlaying;
   pause();
+  atStart = true;
   tabPlayer.seekTo(currentTrack.tabStart, true);
   if (audioPlayer) audioPlayer.seekTo(currentTrack.audioStart, true);
-  if (wasPlaying) play();
+  if (wasPlaying) togglePlay();
 }
 
 function seek(delta) {
@@ -253,15 +323,27 @@ function onDragEnd() {
 
 export function initPlayer() {
   // Cache DOM refs
-  elStatus       = document.getElementById('status');
-  elPlayPause    = document.getElementById('play-pause-btn');
-  elRewind       = document.getElementById('rewind-btn');
-  elSkipBack     = document.getElementById('skip-back-btn');
-  elSkipFwd      = document.getElementById('skip-fwd-btn');
-  elAudioContainer = document.getElementById('audio-container');
+  elStatus           = document.getElementById('status');
+  elPlayPause        = document.getElementById('play-pause-btn');
+  elRewind           = document.getElementById('rewind-btn');
+  elSkipBack         = document.getElementById('skip-back-btn');
+  elSkipFwd          = document.getElementById('skip-fwd-btn');
+  elAudioContainer   = document.getElementById('audio-container');
+  elCountInBtn       = document.getElementById('count-in-btn');
+  elCountdownOverlay = document.getElementById('countdown-overlay');
+  elCountdownNumber  = document.getElementById('countdown-number');
+
+  // Count-in toggle (persisted)
+  countInEnabled = localStorage.getItem(COUNT_IN_KEY) === '1';
+  elCountInBtn.classList.toggle('active', countInEnabled);
+  elCountInBtn.addEventListener('click', () => {
+    countInEnabled = !countInEnabled;
+    elCountInBtn.classList.toggle('active', countInEnabled);
+    localStorage.setItem(COUNT_IN_KEY, countInEnabled ? '1' : '0');
+  });
 
   // Controls
-  elPlayPause.addEventListener('click', () => { isPlaying ? pause() : play(); });
+  elPlayPause.addEventListener('click', togglePlay);
   elRewind.addEventListener('click', restart);
   elSkipBack.addEventListener('click', () => seek(-5));
   elSkipFwd.addEventListener('click', () => seek(+5));
@@ -274,7 +356,7 @@ export function initPlayer() {
     switch (e.code) {
       case 'Space':
         e.preventDefault();
-        isPlaying ? pause() : play();
+        togglePlay();
         break;
       case 'ArrowLeft':
         seek(-5);

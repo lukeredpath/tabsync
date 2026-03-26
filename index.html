@@ -51,6 +51,11 @@
 
     <!-- Stage: video fills this area -->
     <div id="stage">
+      <!-- Count-in overlay -->
+      <div id="countdown-overlay" hidden>
+        <span id="countdown-number"></span>
+      </div>
+
       <div id="tab-container">
         <div id="placeholder">
           <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
@@ -74,6 +79,7 @@
       <button class="ctrl-btn" id="skip-back-btn" disabled title="Skip back (←)">&#x2212;5s</button>
       <button class="ctrl-btn ctrl-btn--primary" id="play-pause-btn" disabled>&#x25B6; Play</button>
       <button class="ctrl-btn" id="skip-fwd-btn" disabled title="Skip forward (→)">+5s</button>
+      <button class="ctrl-btn" id="count-in-btn" title="Count-in: play after a 3-second countdown">Count In</button>
       <div id="status">No track loaded</div>
     </div>
 

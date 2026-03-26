@@ -70,6 +70,7 @@ Because data lives in `localStorage`, it is tied to the browser profile you use.
 
 - Export and import your library as JSON (backup / migration between machines)
 - Auto-detect the correct sync offset by scanning the start of each video
+- Per-track count-in default (override the global toggle on a track-by-track basis)
 
 ## License
 

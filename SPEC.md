@@ -129,6 +129,7 @@ Schema version is checked on load; a migration path should be defined for future
 3. **Auto-fetch metadata** — via oEmbed on URL entry (included in core).
 4. **Auto sync-point detection** — scan the start of both videos to find a matching audio cue and auto-set offsets. Complex; deferred.
 5. **Export / import** — download library as JSON, import from JSON file. Useful for backup and migrating between machines.
+6. **Per-track count-in default** — store a count-in preference on the Track (e.g. `countIn: boolean | null`). When a track is loaded, the player's count-in toggle reflects the track's preference; null means "follow the global toggle".
 
 ---
 
