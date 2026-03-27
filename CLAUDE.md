@@ -50,6 +50,7 @@ Playwright is used for browser-based testing. Tests run against both Chromium an
 - Playwright uses isolated browser contexts — it never touches the user's real browser storage.
 - Each test file should call `localStorage.clear()` in `beforeEach` to ensure clean state.
 - The `playwright-skill` Claude plugin is enabled for exploratory browser automation during development.
+- After every `git push`, a background hook monitors the corresponding GitHub Actions run and wakes Claude if it fails — Claude will then ask whether to investigate and fix the error. This is configured in `.claude/settings.local.json` (not committed).
 
 ## Sensitive data policy
 
