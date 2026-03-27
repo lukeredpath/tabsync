@@ -85,25 +85,28 @@ Delivered alongside Phase 1 scaffold.
 - [x] Seek to fractional start offsets via `seekTo` in `onReady`; integer `start` playerVar as hint
 - [x] Mute tab player when audio video present; unmuted for tab-only
 - [x] Show/hide `#audio-container` based on whether audio video is configured
-- [x] Sync engine: wall-clock anchor, 1s interval, 0.4s drift threshold (no-op for tab-only)
+- [x] Sync engine removed — both players start together and play freely (no drift correction)
 - [x] Controls: play/pause, restart, ±5s skip
 - [x] Keyboard shortcuts: Space, ←/→, R (ignored when input/select focused)
 - [x] Draggable audio overlay; position persists across track changes
 - [x] `tabsync:playback-started` dispatched on `play()` → sidebar auto-collapses
 - [x] Error handling: YouTube error codes mapped to readable messages; controls stay disabled
 - [x] `pendingTrack` path for track selected before API network response returns
+- [x] Count-in toggle — 3-second overlay countdown before playback from start; persisted to `localStorage`
+- [x] Help panel with keyboard shortcuts table
 
 ---
 
-### Phase 5 — Polish
+### Phase 5 — Polish ✅
 
-- [ ] Responsive layout (sidebar collapses to icon bar at narrow widths, if needed)
-- [ ] Visual feedback: currently playing track highlighted in library
-- [ ] Confirmation dialog before deleting a track or folder
-- [ ] Graceful handling of YouTube API not ready (button disabled until API fires)
-- [ ] `onTabStateChange` — pause both players when tab video ends
-- [ ] Difficulty filter in sidebar
-- [ ] Favourites star click directly in track list (without opening editor)
+- [x] Responsive layout — sidebar overlays content at ≤768px; click-outside closes it
+- [x] Visual feedback: currently playing track highlighted in library (`.track-item.active`, accent border-left)
+- [x] Confirmation dialog before deleting a track or folder (`window.confirm`)
+- [x] Graceful handling of YouTube API not ready — controls disabled on load; `pendingTrack` path
+- [x] Pause both players when tab video ends (`makeOnStateChange` handles `YT.PlayerState.ENDED`)
+- [x] Difficulty filter in sidebar — max-difficulty dot filter, clears on re-click
+- [x] Favourites star click directly in track list (without opening editor)
+- [x] Playback speed control — 0.5×/0.75×/1×/1.25× select; persisted to `localStorage`
 
 **Exit criteria**: app feels complete and stable for daily use.
 

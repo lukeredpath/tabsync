@@ -312,10 +312,11 @@ body.sidebar-collapsed #sidebar-open-btn {
   font-size: 13px;
 }
 
-/* ── Track list controls (sort strip) ── */
+/* ── Track list controls (sort strip + difficulty filter) ── */
 #track-list-controls {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
   padding: 6px 12px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -333,6 +334,38 @@ body.sidebar-collapsed #sidebar-open-btn {
 }
 
 #sort-select:focus { outline: none; border-color: var(--accent); }
+
+/* Difficulty filter */
+#difficulty-filter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.filter-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-mid);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.1s, background 0.1s;
+}
+
+.filter-dot:hover { border-color: var(--accent); }
+
+.filter-dot.filled {
+  background: var(--accent);
+  border-color: var(--accent);
+}
 
 /* ── Folder item actions ── */
 .folder-item__actions {
@@ -831,4 +864,52 @@ kbd {
   font-family: inherit;
   padding: 2px 7px;
   color: var(--text);
+}
+
+/* ── Speed select (controls bar) ── */
+#speed-select {
+  background: var(--surface-alt);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 8px 10px;
+  cursor: pointer;
+  height: 38px;
+}
+
+#speed-select:focus { outline: none; border-color: var(--accent); }
+
+/* ── Responsive layout ── */
+@media (max-width: 768px) {
+  #sidebar {
+    position: fixed;
+    height: 100%;
+    z-index: 200;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Sidebar takes no space in the flow — main fills viewport */
+  #sidebar.collapsed + #main,
+  #main {
+    margin-left: 0;
+  }
+
+  /* Hamburger always available since sidebar overlays */
+  #sidebar-open-btn {
+    display: flex;
+  }
+
+  #sidebar:not(.collapsed) ~ #sidebar-open-btn {
+    display: none;
+  }
+
+  #controls {
+    gap: 6px;
+    padding: 0 8px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--controls-height);
+    padding-block: 8px;
+  }
 }

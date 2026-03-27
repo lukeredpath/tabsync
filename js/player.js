@@ -19,6 +19,9 @@ let currentTrack = null;
 let isPlaying = false;
 let atStart = false;           // true after load/restart — count-in applies only then
 
+let playbackRate = 1.0;
+const SPEED_KEY = 'tabsync-speed';
+
 let countInEnabled = false;
 let countInActive  = false;
 let countInTimer   = null;
@@ -30,11 +33,19 @@ let drag = { active: false, startX: 0, startY: 0, origX: 0, origY: 0 };
 // Cached DOM refs (set in initPlayer)
 let elStatus, elPlayPause, elRewind, elSkipBack, elSkipFwd, elAudioContainer;
 let elCountInBtn, elCountdownOverlay, elCountdownNumber;
+let elSpeedSelect;
 
 // ── Helpers ──
 
 function setStatus(msg) {
   elStatus.textContent = msg;
+}
+
+function setSpeed(rate) {
+  playbackRate = rate;
+  if (tabPlayer) tabPlayer.setPlaybackRate(rate);
+  if (audioPlayer) audioPlayer.setPlaybackRate(rate);
+  localStorage.setItem(SPEED_KEY, String(rate));
 }
 
 function setControlsEnabled(enabled) {
@@ -148,10 +159,12 @@ function makeOnReady(capturedLoadId) {
     // Both (or the only) player is ready — seek to fractional start offsets
     tabPlayer.seekTo(currentTrack.tabStart, true);
     tabPlayer.pauseVideo();
+    tabPlayer.setPlaybackRate(playbackRate);
 
     if (audioPlayer) {
       audioPlayer.seekTo(currentTrack.audioStart, true);
       audioPlayer.pauseVideo();
+      audioPlayer.setPlaybackRate(playbackRate);
     }
 
     atStart = true;
@@ -332,6 +345,12 @@ export function initPlayer() {
   elCountInBtn       = document.getElementById('count-in-btn');
   elCountdownOverlay = document.getElementById('countdown-overlay');
   elCountdownNumber  = document.getElementById('countdown-number');
+  elSpeedSelect      = document.getElementById('speed-select');
+
+  // Speed (persisted)
+  playbackRate = parseFloat(localStorage.getItem(SPEED_KEY)) || 1.0;
+  elSpeedSelect.value = String(playbackRate);
+  elSpeedSelect.addEventListener('change', e => setSpeed(parseFloat(e.target.value)));
 
   // Count-in toggle (persisted)
   countInEnabled = localStorage.getItem(COUNT_IN_KEY) === '1';

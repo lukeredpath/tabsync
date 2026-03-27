@@ -15,6 +15,7 @@ const state = {
   searchQuery: '',
   sortBy: 'createdAt-desc',
   selectedTrackId: null,
+  difficultyFilter: null, // null | 1–5 (max difficulty)
 };
 
 // ── Helpers ──
@@ -62,7 +63,13 @@ function getViewTracks() {
     }
   }
 
-  return sortTracks(tracks, state.sortBy);
+  tracks = sortTracks(tracks, state.sortBy);
+
+  if (state.difficultyFilter !== null) {
+    tracks = tracks.filter(t => t.difficulty !== null && t.difficulty <= state.difficultyFilter);
+  }
+
+  return tracks;
 }
 
 function emptyMessage() {
@@ -71,6 +78,13 @@ function emptyMessage() {
   if (view === 'favourites') return 'No favourite tracks yet. Star a track to add it here.';
   if (view !== 'all') return 'No tracks in this folder.';
   return 'No tracks yet. Click + Add Track to get started.';
+}
+
+function renderDifficultyFilter() {
+  document.querySelectorAll('.filter-dot').forEach(dot => {
+    const val = parseInt(dot.dataset.difficulty, 10);
+    dot.classList.toggle('filled', state.difficultyFilter !== null && val <= state.difficultyFilter);
+  });
 }
 
 // ── Render ──
@@ -344,12 +358,29 @@ export function initLibraryUI() {
     dispatch('tabsync:editor-open', null);
   });
 
+  // Difficulty filter dots
+  document.querySelectorAll('.filter-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const val = parseInt(dot.dataset.difficulty, 10);
+      state.difficultyFilter = state.difficultyFilter === val ? null : val;
+      renderDifficultyFilter();
+      renderTrackList();
+    });
+  });
+
   // Re-render when data changes
   document.addEventListener('tabsync:library-changed', render);
 
   // Auto-collapse sidebar when playback starts
   document.addEventListener('tabsync:playback-started', () => {
     document.getElementById('sidebar').classList.add('collapsed');
+  });
+
+  // Click-outside to close sidebar on narrow viewports
+  document.getElementById('main').addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar').classList.add('collapsed');
+    }
   });
 
   render();

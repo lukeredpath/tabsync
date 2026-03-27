@@ -32,6 +32,14 @@
         <option value="artist-asc">Artist A–Z</option>
         <option value="difficulty-asc">Difficulty</option>
       </select>
+      <div id="difficulty-filter">
+        <span class="filter-label">Max difficulty:</span>
+        <button class="filter-dot" data-difficulty="1" title="Show up to difficulty 1"></button>
+        <button class="filter-dot" data-difficulty="2" title="Show up to difficulty 2"></button>
+        <button class="filter-dot" data-difficulty="3" title="Show up to difficulty 3"></button>
+        <button class="filter-dot" data-difficulty="4" title="Show up to difficulty 4"></button>
+        <button class="filter-dot" data-difficulty="5" title="Show up to difficulty 5"></button>
+      </div>
     </div>
 
     <div id="track-list">
@@ -79,6 +87,12 @@
       <button class="ctrl-btn" id="skip-back-btn" disabled title="Skip back (←)">&#x2212;5s</button>
       <button class="ctrl-btn ctrl-btn--primary" id="play-pause-btn" disabled>&#x25B6; Play</button>
       <button class="ctrl-btn" id="skip-fwd-btn" disabled title="Skip forward (→)">+5s</button>
+      <select id="speed-select" title="Playback speed">
+        <option value="0.5">0.5×</option>
+        <option value="0.75">0.75×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.25">1.25×</option>
+      </select>
       <button class="ctrl-btn" id="count-in-btn" title="Count-in: play after a 3-second countdown">Count In</button>
       <div id="status">No track loaded</div>
     </div>
