@@ -65,10 +65,12 @@ Playwright is used for browser-based testing. Tests run against both Chromium an
 All commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/) format:
 
 ```
-<type>: <description>
+<type>: Capitalised description
 ```
 
 Common types: `feat`, `fix`, `docs`, `test`, `chore`, `ci`, `refactor`, `style`, `perf`, `build`.
+
+The first word after the `type:` prefix must be capitalised.
 
 ## Coding conventions
 
