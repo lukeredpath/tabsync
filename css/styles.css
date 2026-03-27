@@ -21,14 +21,13 @@
   --text-mid:    #aaa;
   --text-muted:  #666;
   --danger:      #e74c3c;
-  --theme-icon:  "☀️";
 
   --sidebar-width: 280px;
   --controls-height: 60px;
   --sidebar-header-height: 48px;
 }
 
-/* Light */
+/* Light — app.js resolves system preference and always sets data-theme explicitly */
 [data-theme="light"] {
   --bg:          #f5f5f5;
   --surface:     #ffffff;
@@ -41,25 +40,6 @@
   --text-mid:    #555;
   --text-muted:  #999;
   --danger:      #dc2626;
-  --theme-icon:  "🌙";
-}
-
-/* Honour system preference when no explicit override is set */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    --bg:          #f5f5f5;
-    --surface:     #ffffff;
-    --surface-alt: #efefef;
-    --border:      #ddd;
-    --border-mid:  #ccc;
-    --accent:      #d97706;
-    --accent-hover:#b45309;
-    --text:        #111;
-    --text-mid:    #555;
-    --text-muted:  #999;
-    --danger:      #dc2626;
-    --theme-icon:  "🌙";
-  }
 }
 
 body {
@@ -389,7 +369,24 @@ body.sidebar-collapsed #sidebar-open-btn {
 
 .folder-item__btn:hover { color: var(--text); background: var(--border); }
 
-/* ── New folder row ── */
+/* ── New folder / rename ── */
+.folder-item--new {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.folder-rename-input {
+  background: var(--surface-alt);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 2px 6px;
+  width: 120px;
+}
+
+.folder-rename-input:focus { outline: none; }
+
 .new-folder-row {
   padding: 6px 12px;
 }
@@ -449,6 +446,11 @@ body.sidebar-collapsed #sidebar-open-btn {
   height: 100%;
 }
 
+#tab-player {
+  width: 100%;
+  height: 100%;
+}
+
 #tab-container iframe {
   width: 100%;
   height: 100%;
@@ -456,6 +458,8 @@ body.sidebar-collapsed #sidebar-open-btn {
 }
 
 /* ── Placeholder ── */
+#placeholder[hidden] { display: none; }
+
 #placeholder {
   display: flex;
   flex-direction: column;
@@ -557,7 +561,7 @@ body.sidebar-collapsed #sidebar-open-btn {
   transition: background 0.15s;
 }
 
-.ctrl-btn:hover:not(:disabled) { background: #333; }
+.ctrl-btn:hover:not(:disabled) { background: var(--border-mid); }
 .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
 
 .ctrl-btn--primary {
@@ -715,6 +719,12 @@ body.sidebar-collapsed #sidebar-open-btn {
 .field-group select.invalid {
   border-color: var(--danger);
 }
+
+.field-group--top-align { align-items: flex-start; }
+
+.input--narrow { width: 140px; }
+
+.btn--auto-width { width: auto; }
 
 .field-row {
   display: flex;

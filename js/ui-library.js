@@ -5,9 +5,11 @@ import {
   getLibrary,
   createFolder, updateFolder, deleteFolder,
   deleteTrack, updateTrack,
-  getFavourites, getTracksByFolder, searchTracks,
   exportLibrary, importLibrary,
 } from './library.js';
+import { dispatch } from './utils.js';
+
+const MOBILE_BREAKPOINT = 768;
 
 // ── State ──
 
@@ -20,10 +22,6 @@ const state = {
 };
 
 // ── Helpers ──
-
-function dispatch(name, detail = null) {
-  document.dispatchEvent(new CustomEvent(name, detail ? { detail } : undefined));
-}
 
 function sortTracks(tracks, sortBy) {
   const sorted = [...tracks];
@@ -40,37 +38,33 @@ function sortTracks(tracks, sortBy) {
   }
 }
 
+function applySearch(tracks, query) {
+  if (!query) return tracks;
+  const q = query.toLowerCase();
+  return tracks.filter(t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q));
+}
+
 function getViewTracks() {
   const { view, searchQuery } = state;
+  const { tracks } = getLibrary();
 
-  let tracks;
+  let filtered;
   if (view === 'all') {
-    tracks = searchQuery ? searchTracks(searchQuery) : getLibrary().tracks;
+    filtered = tracks;
   } else if (view === 'favourites') {
-    tracks = getFavourites();
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      tracks = tracks.filter(
-        t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q)
-      );
-    }
+    filtered = tracks.filter(t => t.favourite);
   } else {
-    tracks = getTracksByFolder(view);
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      tracks = tracks.filter(
-        t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q)
-      );
-    }
+    filtered = tracks.filter(t => t.folderId === view);
   }
 
-  tracks = sortTracks(tracks, state.sortBy);
+  filtered = applySearch(filtered, searchQuery);
+  filtered = sortTracks(filtered, state.sortBy);
 
   if (state.difficultyFilter !== null) {
-    tracks = tracks.filter(t => t.difficulty !== null && t.difficulty <= state.difficultyFilter);
+    filtered = filtered.filter(t => t.difficulty !== null && t.difficulty <= state.difficultyFilter);
   }
 
-  return tracks;
+  return filtered;
 }
 
 function emptyMessage() {
@@ -96,16 +90,16 @@ function render() {
 }
 
 function renderFolderNav() {
-  const { folders } = getLibrary();
+  const { tracks, folders } = getLibrary();
   const nav = document.getElementById('folder-nav');
 
   const items = [
-    { id: 'all',        label: 'All tracks',  count: getLibrary().tracks.length },
-    { id: 'favourites', label: 'Favourites',  count: getFavourites().length },
+    { id: 'all',        label: 'All tracks', count: tracks.length },
+    { id: 'favourites', label: 'Favourites', count: tracks.filter(t => t.favourite).length },
     ...folders
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name))
-      .map(f => ({ id: f.id, label: f.name, count: getTracksByFolder(f.id).length, isFolder: true })),
+      .map(f => ({ id: f.id, label: f.name, count: tracks.filter(t => t.folderId === f.id).length, isFolder: true })),
   ];
 
   nav.innerHTML = '';
@@ -165,11 +159,9 @@ function renderFolderNav() {
 
   // New folder row
   const newFolderRow = document.createElement('div');
-  newFolderRow.className = 'folder-item';
+  newFolderRow.className = 'folder-item folder-item--new';
   newFolderRow.id = 'new-folder-trigger';
   newFolderRow.textContent = '+ New folder';
-  newFolderRow.style.color = 'var(--text-muted)';
-  newFolderRow.style.fontSize = '12px';
   newFolderRow.addEventListener('click', () => showNewFolderInput(nav));
   nav.appendChild(newFolderRow);
 }
@@ -179,7 +171,7 @@ function startFolderRename(el, folderId, currentName) {
   const input = document.createElement('input');
   input.type = 'text';
   input.value = currentName;
-  input.style.cssText = 'background:var(--surface-alt);border:1px solid var(--accent);border-radius:4px;color:var(--text);font-size:13px;padding:2px 6px;width:120px;';
+  input.className = 'folder-rename-input';
   nameSpan.replaceWith(input);
   input.focus();
   input.select();
@@ -411,7 +403,7 @@ export function initLibraryUI() {
 
   // Click-outside to close sidebar on narrow viewports
   document.getElementById('main').addEventListener('click', () => {
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
       document.getElementById('sidebar').classList.add('collapsed');
     }
   });

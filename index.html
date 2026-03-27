@@ -12,9 +12,9 @@
   <aside id="sidebar">
     <header id="sidebar-header">
       <span class="app-title">TabSync</span>
-      <button id="help-btn" title="Keyboard shortcuts">?</button>
-      <button id="theme-toggle-btn" title="Toggle light/dark theme">&#9790;</button>
-      <button id="sidebar-collapse-btn" title="Collapse library">&#x2715;</button>
+      <button id="help-btn" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">?</button>
+      <button id="theme-toggle-btn" title="Toggle light/dark theme" aria-label="Toggle light/dark theme">&#9790;</button>
+      <button id="sidebar-collapse-btn" title="Collapse library" aria-label="Collapse library">&#x2715;</button>
     </header>
 
     <div id="sidebar-search">
@@ -34,11 +34,11 @@
       </select>
       <div id="difficulty-filter">
         <span class="filter-label">Max difficulty:</span>
-        <button class="filter-dot" data-difficulty="1" title="Show up to difficulty 1"></button>
-        <button class="filter-dot" data-difficulty="2" title="Show up to difficulty 2"></button>
-        <button class="filter-dot" data-difficulty="3" title="Show up to difficulty 3"></button>
-        <button class="filter-dot" data-difficulty="4" title="Show up to difficulty 4"></button>
-        <button class="filter-dot" data-difficulty="5" title="Show up to difficulty 5"></button>
+        <button class="filter-dot" data-difficulty="1" title="Show up to difficulty 1" aria-label="Show up to difficulty 1"></button>
+        <button class="filter-dot" data-difficulty="2" title="Show up to difficulty 2" aria-label="Show up to difficulty 2"></button>
+        <button class="filter-dot" data-difficulty="3" title="Show up to difficulty 3" aria-label="Show up to difficulty 3"></button>
+        <button class="filter-dot" data-difficulty="4" title="Show up to difficulty 4" aria-label="Show up to difficulty 4"></button>
+        <button class="filter-dot" data-difficulty="5" title="Show up to difficulty 5" aria-label="Show up to difficulty 5"></button>
       </div>
     </div>
 
@@ -87,28 +87,28 @@
     </div>
 
     <!-- Controls bar -->
-    <div id="controls">
+    <div id="controls" role="toolbar" aria-label="Playback controls">
       <button class="ctrl-btn" id="rewind-btn" disabled title="Restart (R)">&#x21A9; Restart</button>
       <button class="ctrl-btn" id="skip-back-btn" disabled title="Skip back (←)">&#x2212;5s</button>
       <button class="ctrl-btn ctrl-btn--primary" id="play-pause-btn" disabled>&#x25B6; Play</button>
       <button class="ctrl-btn" id="skip-fwd-btn" disabled title="Skip forward (→)">+5s</button>
-      <select id="speed-select" title="Playback speed">
+      <select id="speed-select" title="Playback speed" aria-label="Playback speed">
         <option value="0.5">0.5×</option>
         <option value="0.75">0.75×</option>
         <option value="1" selected>1×</option>
         <option value="1.25">1.25×</option>
       </select>
       <button class="ctrl-btn" id="count-in-btn" title="Count-in: play after a 3-second countdown">Count In</button>
-      <div id="status">No track loaded</div>
+      <div id="status" aria-live="polite">No track loaded</div>
     </div>
 
   </main>
 
   <!-- ── Help modal ── -->
-  <div id="help-overlay" hidden>
+  <div id="help-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="help-modal-heading">
     <div id="help-modal">
       <div id="help-header">
-        <h2>Keyboard Shortcuts</h2>
+        <h2 id="help-modal-heading">Keyboard Shortcuts</h2>
         <button id="help-close-btn" title="Close">&#x2715;</button>
       </div>
       <table id="help-table">
@@ -123,7 +123,7 @@
   </div>
 
   <!-- ── Editor modal ── -->
-  <div id="editor-overlay" hidden>
+  <div id="editor-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ef-heading">
     <div id="editor-modal">
       <!-- Populated by ui-editor.js -->
     </div>

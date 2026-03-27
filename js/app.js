@@ -17,17 +17,26 @@ const THEME_META = {
   light:  { icon: '☾', title: 'Light theme (click for system)' },
 };
 
-function applyTheme(theme) {
-  if (theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-  }
+// System preference media query — used to resolve 'null' (system) theme.
+// By always setting data-theme explicitly, the CSS needs no @media block.
+const systemMQ = window.matchMedia('(prefers-color-scheme: light)');
+
+// Tracks the user's saved preference (null = follow system)
+let currentPreference = null;
+
+function resolveTheme(pref) {
+  return pref ?? (systemMQ.matches ? 'light' : 'dark');
+}
+
+function applyTheme(pref) {
+  currentPreference = pref;
+  document.documentElement.setAttribute('data-theme', resolveTheme(pref));
   const btn = document.getElementById('theme-toggle-btn');
   if (btn) {
-    const meta = THEME_META[theme ?? 'system'];
+    const meta = THEME_META[pref ?? 'system'];
     btn.textContent = meta.icon;
     btn.title = meta.title;
+    btn.setAttribute('aria-label', meta.title);
   }
 }
 
@@ -35,9 +44,13 @@ function initTheme() {
   const saved = localStorage.getItem(THEME_KEY) || null;
   applyTheme(saved);
 
+  // When in system mode, follow OS preference changes in real time
+  systemMQ.addEventListener('change', () => {
+    if (currentPreference === null) applyTheme(null);
+  });
+
   document.getElementById('theme-toggle-btn').addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme') || null;
-    const idx = THEME_CYCLE.indexOf(current);
+    const idx = THEME_CYCLE.indexOf(currentPreference);
     const next = THEME_CYCLE[(idx + 1) % THEME_CYCLE.length];
     if (next === null) {
       localStorage.removeItem(THEME_KEY);

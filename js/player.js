@@ -1,6 +1,12 @@
 // ── Player ──
 // YouTube IFrame API wrapper and sync engine.
 
+// ── Constants ──
+
+const SEEK_DELTA         = 5;    // seconds per skip-back / skip-forward
+const COUNT_IN_SECONDS   = 3;    // countdown duration
+const SEEK_RESUME_DELAY  = 150;  // ms to wait after seekTo before resuming (IFrame API queue)
+
 // ── Module state ──
 
 let apiReady = false;
@@ -25,6 +31,8 @@ const SPEED_KEY = 'tabsync-speed';
 let countInEnabled = false;
 let countInActive  = false;
 let countInTimer   = null;
+
+let seekTimer = null;
 
 const COUNT_IN_KEY = 'tabsync-count-in';
 
@@ -105,8 +113,16 @@ function loadTrack(track) {
   // Show/hide audio overlay
   elAudioContainer.hidden = !hasAudio;
 
-  // Teardown: destroy old iframes by replacing innerHTML
-  document.getElementById('tab-container').innerHTML = '<div id="tab-player"></div>';
+  // Hide the placeholder and replace any existing tab player div
+  const tabContainer = document.getElementById('tab-container');
+  const placeholder = document.getElementById('placeholder');
+  if (placeholder) placeholder.hidden = true;
+  const oldTabPlayer = document.getElementById('tab-player');
+  if (oldTabPlayer) oldTabPlayer.remove();
+  const tabPlayerDiv = document.createElement('div');
+  tabPlayerDiv.id = 'tab-player';
+  tabContainer.appendChild(tabPlayerDiv);
+
   if (hasAudio) {
     document.getElementById('audio-player-wrapper').innerHTML = '<div id="audio-player"></div>';
   }
@@ -220,7 +236,7 @@ function startCountIn() {
   elCountdownOverlay.hidden = false;
   setStatus('Count in…');
 
-  let count = 3;
+  let count = COUNT_IN_SECONDS;
   elCountdownNumber.textContent = count;
   // Re-trigger CSS animation on each tick by cloning the node
   function animateTick() {
@@ -295,41 +311,71 @@ function seek(delta) {
   if (audioPlayer) audioPlayer.seekTo(audioPlayer.getCurrentTime() + delta, true);
 
   if (wasPlaying) {
-    // Brief delay lets the IFrame API's internal queue settle before resuming
-    setTimeout(() => {
+    // Brief delay lets the IFrame API's internal queue settle before resuming.
+    // Cancel any in-flight timer from a previous seek so rapid input doesn't
+    // queue multiple resume callbacks.
+    clearTimeout(seekTimer);
+    seekTimer = setTimeout(() => {
+      seekTimer = null;
       tabPlayer.playVideo();
       if (audioPlayer) audioPlayer.playVideo();
       isPlaying = true;
       elPlayPause.textContent = '⏸ Pause';
       setStatus('Playing');
-    }, 150);
+    }, SEEK_RESUME_DELAY);
   }
 }
 
 // ── Draggable audio overlay ──
 
-function onDragStart(e) {
+function startDrag(clientX, clientY) {
   drag.active = true;
-  drag.startX = e.clientX;
-  drag.startY = e.clientY;
+  drag.startX = clientX;
+  drag.startY = clientY;
   const rect = elAudioContainer.getBoundingClientRect();
   drag.origX = rect.left;
   drag.origY = rect.top;
-  e.preventDefault(); // prevent text selection during drag
 }
 
-function onDragMove(e) {
-  if (!drag.active) return;
-  const dx = e.clientX - drag.startX;
-  const dy = e.clientY - drag.startY;
+function moveDrag(clientX, clientY) {
+  const dx = clientX - drag.startX;
+  const dy = clientY - drag.startY;
   elAudioContainer.style.left   = (drag.origX + dx) + 'px';
   elAudioContainer.style.top    = (drag.origY + dy) + 'px';
   elAudioContainer.style.bottom = 'auto';
   elAudioContainer.style.right  = 'auto';
 }
 
-function onDragEnd() {
+function endDrag() {
   drag.active = false;
+  document.removeEventListener('mousemove', onMouseDragMove);
+  document.removeEventListener('mouseup', endDrag);
+  document.removeEventListener('touchmove', onTouchDragMove);
+  document.removeEventListener('touchend', endDrag);
+}
+
+function onMouseDragStart(e) {
+  startDrag(e.clientX, e.clientY);
+  document.addEventListener('mousemove', onMouseDragMove);
+  document.addEventListener('mouseup', endDrag);
+  e.preventDefault();
+}
+
+function onMouseDragMove(e) {
+  moveDrag(e.clientX, e.clientY);
+}
+
+function onTouchDragStart(e) {
+  const touch = e.touches[0];
+  startDrag(touch.clientX, touch.clientY);
+  document.addEventListener('touchmove', onTouchDragMove, { passive: false });
+  document.addEventListener('touchend', endDrag);
+  e.preventDefault();
+}
+
+function onTouchDragMove(e) {
+  moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+  e.preventDefault();
 }
 
 // ── Init ──
@@ -364,8 +410,8 @@ export function initPlayer() {
   // Controls
   elPlayPause.addEventListener('click', togglePlay);
   elRewind.addEventListener('click', restart);
-  elSkipBack.addEventListener('click', () => seek(-5));
-  elSkipFwd.addEventListener('click', () => seek(+5));
+  elSkipBack.addEventListener('click', () => seek(-SEEK_DELTA));
+  elSkipFwd.addEventListener('click', () => seek(+SEEK_DELTA));
 
   // Keyboard shortcuts
   document.addEventListener('keydown', e => {
@@ -378,10 +424,10 @@ export function initPlayer() {
         togglePlay();
         break;
       case 'ArrowLeft':
-        seek(-5);
+        seek(-SEEK_DELTA);
         break;
       case 'ArrowRight':
-        seek(+5);
+        seek(+SEEK_DELTA);
         break;
       case 'KeyR':
         restart();
@@ -389,10 +435,10 @@ export function initPlayer() {
     }
   });
 
-  // Draggable audio overlay
-  elAudioContainer.addEventListener('mousedown', onDragStart);
-  document.addEventListener('mousemove', onDragMove);
-  document.addEventListener('mouseup', onDragEnd);
+  // Draggable audio overlay — listeners registered/removed per-drag to avoid
+  // firing on every mouse/touch move globally
+  elAudioContainer.addEventListener('mousedown', onMouseDragStart);
+  elAudioContainer.addEventListener('touchstart', onTouchDragStart, { passive: false });
 
   // Track selection
   document.addEventListener('tabsync:track-selected', e => {

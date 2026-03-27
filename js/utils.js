@@ -19,6 +19,11 @@ export function extractVideoId(url) {
   return m ? m[1] : null;
 }
 
+/** Dispatch a namespaced CustomEvent on document. */
+export function dispatch(name, detail = null) {
+  document.dispatchEvent(new CustomEvent(name, detail ? { detail } : undefined));
+}
+
 /**
  * Fetch video title and author from YouTube oEmbed.
  * Returns { title, author } or null on failure.

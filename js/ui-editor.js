@@ -1,17 +1,15 @@
 // ── Editor UI ──
 // Add/edit track modal form.
 
-import { getLibrary, createTrack, updateTrack } from './library.js';
-import { extractVideoId, fetchOEmbed } from './utils.js';
+import { createTrack, updateTrack, getSortedFolders } from './library.js';
+import { extractVideoId, fetchOEmbed, dispatch } from './utils.js';
+
+const OEMBED_SUCCESS_TIMEOUT = 3000;
 
 let editingTrackId = null;
 let openSnapshot = null; // form state at the time the editor was opened
 
 // ── Helpers ──
-
-function dispatch(name, detail = null) {
-  document.dispatchEvent(new CustomEvent(name, detail ? { detail } : undefined));
-}
 
 function $(id) { return document.getElementById(id); }
 
@@ -21,7 +19,7 @@ function setOembedStatus(elId, msg, type = '') {
   el.textContent = msg;
   el.className = 'oembed-status' + (type ? ` ${type}` : '');
   if (type === 'success') {
-    setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 3000);
+    setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, OEMBED_SUCCESS_TIMEOUT);
   }
 }
 
@@ -54,7 +52,7 @@ function buildFormHTML() {
             ${[1,2,3,4,5].map(n => `<button type="button" class="difficulty-dot" data-value="${n}">${n}</button>`).join('')}
           </div>
         </div>
-        <div class="field-group" style="align-items:flex-start">
+        <div class="field-group field-group--top-align">
           <label>Favourite</label>
           <button type="button" id="ef-favourite" class="favourite-toggle">☆</button>
         </div>
@@ -70,7 +68,7 @@ function buildFormHTML() {
       </div>
       <div class="field-group">
         <label for="ef-tab-start">Start time (seconds)</label>
-        <input type="number" id="ef-tab-start" value="0" min="0" step="0.1" style="width:140px" />
+        <input type="number" id="ef-tab-start" value="0" min="0" step="0.1" class="input--narrow" />
       </div>
     </div>
 
@@ -83,13 +81,13 @@ function buildFormHTML() {
       </div>
       <div class="field-group">
         <label for="ef-audio-start">Start time (seconds)</label>
-        <input type="number" id="ef-audio-start" value="0" min="0" step="0.1" style="width:140px" />
+        <input type="number" id="ef-audio-start" value="0" min="0" step="0.1" class="input--narrow" />
       </div>
     </div>
 
     <div class="form-actions">
       <button type="button" id="ef-cancel" class="btn-secondary">Cancel</button>
-      <button type="button" id="ef-submit" class="btn btn-primary" style="width:auto">Add Track</button>
+      <button type="button" id="ef-submit" class="btn btn-primary btn--auto-width">Add Track</button>
     </div>
   `;
 }
@@ -130,13 +128,9 @@ function renderFavouriteToggle() {
 
 function populateFolderSelect(selectedFolderId = null) {
   const select = $('ef-folder');
-  const { folders } = getLibrary();
   // Keep only the default option, replace the rest
   select.innerHTML = '<option value="">— No folder —</option>';
-  folders
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .forEach(f => {
+  getSortedFolders().forEach(f => {
       const opt = document.createElement('option');
       opt.value = f.id;
       opt.textContent = f.name;

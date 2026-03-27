@@ -150,6 +150,11 @@ export function searchTracks(query) {
   );
 }
 
+/** @returns {Folder[]} all folders sorted alphabetically by name */
+export function getSortedFolders() {
+  return getLibrary().folders.slice().sort((a, b) => a.name.localeCompare(b.name));
+}
+
 // Export / import
 
 export function exportLibrary() {
