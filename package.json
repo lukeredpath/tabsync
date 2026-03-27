@@ -1,0 +1,22 @@
+{
+  "name": "tabsync",
+  "version": "1.0.0",
+  "description": "A local web app for musicians who practise with YouTube tab videos. Load a tab video alongside the original song audio, keep them in sync, and build a persistent library of tracks so you can jump straight into practising.",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukeredpath/tabsync.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lukeredpath/tabsync/issues"
+  },
+  "homepage": "https://github.com/lukeredpath/tabsync#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0"
+  }
+}
