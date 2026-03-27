@@ -1,5 +1,7 @@
 # TabSync
 
+[![Playwright Tests](https://github.com/lukeredpath/tabsync/actions/workflows/playwright.yml/badge.svg)](https://github.com/lukeredpath/tabsync/actions/workflows/playwright.yml)
+
 A local web app for musicians who practise with YouTube tab videos. Load a tab video alongside the original song audio, keep them in sync, and build a persistent library of tracks so you can jump straight into practising.
 
 Works for any tab-based practice — bass, guitar, or otherwise.
