@@ -411,6 +411,20 @@ body.sidebar-collapsed #sidebar-open-btn {
   padding: 10px 12px;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#library-actions {
+  display: flex;
+  gap: 6px;
+}
+
+#library-actions .btn-secondary {
+  flex: 1;
+  font-size: 12px;
+  padding: 6px 10px;
 }
 
 /* ── Main layout ── */

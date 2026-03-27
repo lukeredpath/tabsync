@@ -6,6 +6,7 @@ import {
   createFolder, updateFolder, deleteFolder,
   deleteTrack, updateTrack,
   getFavourites, getTracksByFolder, searchTracks,
+  exportLibrary, importLibrary,
 } from './library.js';
 
 // ── State ──
@@ -374,6 +375,38 @@ export function initLibraryUI() {
   // Auto-collapse sidebar when playback starts
   document.addEventListener('tabsync:playback-started', () => {
     document.getElementById('sidebar').classList.add('collapsed');
+  });
+
+  // Export
+  document.getElementById('export-btn').addEventListener('click', () => {
+    const json = exportLibrary();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `tabsync-library-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Import
+  const importFileInput = document.getElementById('import-file-input');
+  document.getElementById('import-btn').addEventListener('click', () => importFileInput.click());
+  importFileInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    e.target.value = ''; // reset so same file can be re-imported
+    if (!file) return;
+    if (!confirm('This will replace your entire library. Are you sure?')) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        importLibrary(ev.target.result);
+        dispatch('tabsync:library-changed');
+      } catch {
+        alert('Could not import: file is not a valid TabSync library.');
+      }
+    };
+    reader.readAsText(file);
   });
 
   // Click-outside to close sidebar on narrow viewports
