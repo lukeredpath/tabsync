@@ -18,8 +18,10 @@ Works for any tab-based practice — bass, guitar, or otherwise.
 - Track metadata (title and artist) is auto-fetched from YouTube when you paste a URL
 
 ### Player
-- Tab video fills the main area; if you've added an audio track, it plays in a small draggable overlay with the tab video muted
+- Tab video fills the main area; if you've added an audio track, it plays in a small draggable overlay (drag with mouse or touch) with the tab video muted
 - Play, pause, restart, and skip ±5 seconds with on-screen controls or keyboard shortcuts
+- Playback speed control — 0.5×, 0.75×, 1×, or 1.25×; persisted across sessions
+- Count-in mode — optional 3-second countdown before playback starts
 - Both videos start together from their configured offsets
 
 ### Keyboard shortcuts
@@ -29,6 +31,10 @@ Works for any tab-based practice — bass, guitar, or otherwise.
 | `R` | Restart from beginning |
 | `←` | Skip back 5 seconds |
 | `→` | Skip forward 5 seconds |
+
+### Library management
+- Export your library as a dated JSON file for backup or migration
+- Import a JSON file to restore a library (replaces current data with confirmation)
 
 ### Other
 - Light and dark themes, following your system preference by default with a manual override
@@ -68,7 +74,6 @@ Because data lives in `localStorage`, it is tied to the browser profile you use.
 
 ## Planned features
 
-- Export and import your library as JSON (backup / migration between machines)
 - Auto-detect the correct sync offset by scanning the start of each video
 - Per-track count-in default (override the global toggle on a track-by-track basis)
 

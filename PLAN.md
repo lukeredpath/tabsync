@@ -112,15 +112,31 @@ Delivered alongside Phase 1 scaffold.
 
 ---
 
-### Phase 6 — Stretch goals (deferred, no schedule)
+### Phase 6 — Stretch goals ✅ (partially)
 
-- **Export / import**: Download library as a JSON file; import from a JSON file (merge or replace). This is the primary backup/migration path given data lives in localStorage.
-- **Auto sync-point detection**: Scan the first N seconds of both videos to find a matching audio cue and suggest offsets automatically. Requires either the YouTube Data API (audio waveform access) or a user-assisted UI where two cursors are moved to the same moment in each video.
+- [x] **Export / import**: Download library as a dated JSON file; import from a JSON file (replaces library with confirmation prompt). Wires to existing `exportLibrary`/`importLibrary` in `library.js`.
+- [ ] **Auto sync-point detection**: Scan the first N seconds of both videos to find a matching audio cue and suggest offsets automatically. Requires either the YouTube Data API (audio waveform access) or a user-assisted UI where two cursors are moved to the same moment in each video.
+
+---
+
+### Post-phase 6 — Code quality refactor ✅
+
+- [x] Extract `dispatch()` helper to `utils.js`; `getSortedFolders()` to `library.js`
+- [x] Eliminate redundant `getLibrary()` calls in `renderFolderNav()`
+- [x] Deduplicate search filter logic via `applySearch()` helper
+- [x] Debounce `seek()` `setTimeout` to prevent state corruption on rapid key input
+- [x] Drag handlers register/unregister per-drag; add touch support for audio overlay
+- [x] Preserve `#placeholder` element in `loadTrack()` instead of destroying it
+- [x] Fix `.ctrl-btn:hover` hardcoded colour invisible in light mode
+- [x] Remove duplicate light theme `@media` block; `app.js` resolves system theme via `matchMedia`
+- [x] Replace inline styles in JS with CSS classes
+- [x] Add named constants (`SEEK_DELTA`, `COUNT_IN_SECONDS`, etc.)
+- [x] Add ARIA roles and labels to modals, icon buttons, filter dots, status region, controls bar
 
 ---
 
 ## Notes
 
 - **Browser**: Target Safari (the Makefile opens it directly). ITP was a known blocker during early prototyping but this will be verified in testing. Chrome is a fallback if Safari proves problematic.
-- **Data fragility**: `localStorage` is cleared if the user wipes browser data. The export feature (Phase 6) is the mitigation. Until that's built, users should be aware of this limitation.
+- **Data fragility**: `localStorage` is cleared if the user wipes browser data. Export/import (Phase 6) is the mitigation — users should export regularly.
 - **YouTube embedding**: Some videos have embedding disabled by the uploader. The player should surface this error clearly rather than silently failing.
