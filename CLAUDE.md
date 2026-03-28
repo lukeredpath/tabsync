@@ -36,8 +36,10 @@ See `SPEC.md` for full requirements.
 make start   # serves on :8080, opens Safari
 make stop    # kills the server
 make serve   # headless server only (no browser open) — used by Playwright
-make test    # run Playwright tests, then open report
+make test    # run tests then open report — for manual use only (hangs in automation)
 ```
+
+**Running tests programmatically:** use `npx playwright test` directly. `make test` appends `npx playwright show-report` which opens a browser and hangs.
 
 No build step. ES modules loaded directly by the browser (`type="module"`). Target browser is Chrome (Safari may have issues depending on YouTube's embed policy).
 
