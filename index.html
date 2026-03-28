@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TabSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body x-data>
@@ -191,18 +194,24 @@
 
     <!-- Controls bar -->
     <div id="controls" role="toolbar" aria-label="Playback controls">
-      <button class="ctrl-btn" id="rewind-btn" disabled title="Restart (R)">&#x21A9; Restart</button>
-      <button class="ctrl-btn" id="skip-back-btn" disabled title="Skip back (←)">&#x2212;5s</button>
-      <button class="ctrl-btn ctrl-btn--primary" id="play-pause-btn" disabled>&#x25B6; Play</button>
-      <button class="ctrl-btn" id="skip-fwd-btn" disabled title="Skip forward (→)">+5s</button>
-      <select id="speed-select" title="Playback speed" aria-label="Playback speed">
-        <option value="0.5">0.5×</option>
-        <option value="0.75">0.75×</option>
-        <option value="1" selected>1×</option>
-        <option value="1.25">1.25×</option>
-      </select>
-      <button class="ctrl-btn" id="count-in-btn" title="Count-in: play after a 3-second countdown">Count In</button>
-      <div id="status" aria-live="polite">No track loaded</div>
+      <div id="controls-left">
+        <select id="speed-select" title="Playback speed" aria-label="Playback speed">
+          <option value="0.5">0.5×</option>
+          <option value="0.75">0.75×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.25">1.25×</option>
+        </select>
+        <button class="ctrl-btn" id="count-in-btn" title="Count-in: play after a 3-second countdown">Count In</button>
+      </div>
+      <div id="transport">
+        <button class="ctrl-btn transport-btn" id="rewind-btn" disabled title="Restart (R)">&#x21A9;</button>
+        <button class="ctrl-btn transport-btn" id="skip-back-btn" disabled title="Skip back (←)">&#x2212;5s</button>
+        <button class="ctrl-btn ctrl-btn--primary" id="play-pause-btn" disabled aria-label="Play">&#x25B6;</button>
+        <button class="ctrl-btn transport-btn" id="skip-fwd-btn" disabled title="Skip forward (→)">+5s</button>
+      </div>
+      <div id="controls-right">
+        <div id="status" aria-live="polite">No track loaded</div>
+      </div>
     </div>
 
   </main>

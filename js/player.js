@@ -103,7 +103,7 @@ function loadTrack(track) {
 
   setControlsEnabled(false);
   setStatus('Loading…');
-  elPlayPause.textContent = '▶ Play';
+  elPlayPause.textContent = '▶';
 
   currentTrack = track;
   const hasAudio = Boolean(track.audioVideoId);
@@ -215,7 +215,8 @@ function play() {
   tabPlayer.playVideo();
   if (audioPlayer) audioPlayer.playVideo();
   isPlaying = true;
-  elPlayPause.textContent = '⏸ Pause';
+  elPlayPause.textContent = '⏸';
+  elPlayPause.setAttribute('aria-label', 'Pause');
   setStatus('Playing');
   document.dispatchEvent(new CustomEvent('tabsync:playback-started'));
 }
@@ -225,7 +226,8 @@ function pause() {
   tabPlayer.pauseVideo();
   if (audioPlayer) audioPlayer.pauseVideo();
   isPlaying = false;
-  elPlayPause.textContent = '▶ Play';
+  elPlayPause.textContent = '▶';
+  elPlayPause.setAttribute('aria-label', 'Play');
   setStatus('Paused');
 }
 
@@ -269,7 +271,8 @@ function cancelCountIn() {
   countInTimer = null;
   countInActive = false;
   elCountdownOverlay.hidden = true;
-  elPlayPause.textContent = '▶ Play';
+  elPlayPause.textContent = '▶';
+  elPlayPause.setAttribute('aria-label', 'Play');
   setStatus('Paused');
 }
 
@@ -320,7 +323,7 @@ function seek(delta) {
       tabPlayer.playVideo();
       if (audioPlayer) audioPlayer.playVideo();
       isPlaying = true;
-      elPlayPause.textContent = '⏸ Pause';
+      elPlayPause.textContent = '⏸';
       setStatus('Playing');
     }, SEEK_RESUME_DELAY);
   }

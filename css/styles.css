@@ -43,7 +43,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
   color: var(--text);
   height: 100vh;
@@ -80,10 +80,11 @@ body {
 }
 
 .app-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 #help-btn,
@@ -199,12 +200,14 @@ body.sidebar-collapsed #sidebar-open-btn {
 .track-item {
   display: flex;
   align-items: center;
-  padding: 8px 12px 8px 16px;
+  padding: 10px 12px 10px 16px;
   cursor: pointer;
   gap: 8px;
   border-radius: 0;
+  border-bottom: 1px solid var(--border);
 }
 
+.track-item:last-child { border-bottom: none; }
 .track-item:hover { background: var(--surface-alt); }
 
 .track-item.active {
@@ -468,10 +471,19 @@ body.sidebar-collapsed #sidebar-open-btn {
   height: 100%;
   gap: 16px;
   color: var(--text-muted);
+  background: radial-gradient(ellipse at center, #1c1c1c 0%, #000 70%);
 }
 
-#placeholder svg { opacity: 0.25; }
-#placeholder p { font-size: 14px; }
+[data-theme="light"] #placeholder {
+  background: radial-gradient(ellipse at center, #e8e8e8 0%, #d0d0d0 70%);
+}
+
+#placeholder svg { opacity: 0.18; }
+#placeholder p {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
 
 /* ── Audio overlay ── */
 #audio-container {
@@ -522,12 +534,29 @@ body.sidebar-collapsed #sidebar-open-btn {
   height: var(--controls-height);
   background: var(--surface);
   border-top: 1px solid var(--border);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
   padding: 0 20px;
   flex-shrink: 0;
+}
+
+#controls-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#transport {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#controls-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 /* ── Buttons ── */
@@ -559,27 +588,47 @@ body.sidebar-collapsed #sidebar-open-btn {
   padding: 8px 18px;
   cursor: pointer;
   transition: background 0.15s;
+  font-family: inherit;
 }
 
 .ctrl-btn:hover:not(:disabled) { background: var(--border-mid); }
 .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
 
+/* Smaller flanking transport buttons */
+.transport-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
 .ctrl-btn--primary {
   background: var(--accent);
   color: #000;
   font-weight: 700;
-  font-size: 15px;
-  padding: 10px 32px;
+  font-size: 18px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
   border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
 }
 
-.ctrl-btn--primary:hover:not(:disabled) { background: var(--accent-hover); }
+.ctrl-btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: scale(1.06);
+}
+
+.ctrl-btn--primary:active:not(:disabled) { transform: scale(0.96); }
 
 #status {
   font-size: 12px;
   color: var(--text-muted);
-  min-width: 120px;
-  text-align: center;
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* Count-in toggle active state */
@@ -894,12 +943,12 @@ kbd {
 #speed-select {
   background: var(--surface-alt);
   border: 1px solid var(--border-mid);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text);
-  font-size: 13px;
-  padding: 8px 10px;
+  font-size: 12px;
+  padding: 6px 8px;
   cursor: pointer;
-  height: 38px;
+  font-family: inherit;
 }
 
 #speed-select:focus { outline: none; border-color: var(--accent); }
@@ -929,11 +978,15 @@ kbd {
   }
 
   #controls {
-    gap: 6px;
-    padding: 0 8px;
-    flex-wrap: wrap;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
     height: auto;
     min-height: var(--controls-height);
-    padding-block: 8px;
+    padding: 8px;
+    gap: 6px;
   }
+
+  #transport { justify-content: center; }
+  #controls-left { justify-content: center; }
+  #controls-right { justify-content: center; }
 }
