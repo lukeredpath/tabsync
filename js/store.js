@@ -26,13 +26,15 @@ export function initStore(Alpine) {
     tracks: [],
     folders: [],
 
-    // ── UI state ──
-    view: 'all',           // 'all' | 'favourites' | <folderId>
+    // ── UI state (persisted) ──
+    view:             Alpine.$persist('all').as('tabsync-view'),
+    sortBy:           Alpine.$persist('createdAt-desc').as('tabsync-sort'),
+    sidebarCollapsed: Alpine.$persist(false).as('tabsync-sidebar-collapsed'),
+
+    // ── UI state (session only) ──
     searchQuery: '',
-    sortBy: 'createdAt-desc',
     difficultyFilter: null,
     selectedTrackId: null,
-    sidebarCollapsed: false,
 
     // ── Lifecycle ──
 

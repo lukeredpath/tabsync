@@ -227,6 +227,7 @@
 
   <!-- ── Editor modal ── -->
   <div id="editor-overlay" x-data="editorUI" x-show="open" style="display:none"
+    x-trap="open"
     role="dialog" aria-modal="true" aria-labelledby="ef-heading"
     @mousedown="backdropMousedown = $event.target === $el"
     @click="if ($event.target === $el && backdropMousedown) tryClose()">

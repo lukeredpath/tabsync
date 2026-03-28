@@ -1,6 +1,8 @@
 // ── TabSync — entry point ──
 
-import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3/dist/module.esm.js';
+import Alpine  from 'https://cdn.jsdelivr.net/npm/alpinejs@3/dist/module.esm.js';
+import Persist from 'https://cdn.jsdelivr.net/npm/@alpinejs/persist@3/dist/module.esm.js';
+import Focus   from 'https://cdn.jsdelivr.net/npm/@alpinejs/focus@3/dist/module.esm.js';
 import { initStore }           from './store.js';
 import { initEditorComponent } from './editor.js';
 import { initPlayer }          from './player.js';
@@ -83,6 +85,10 @@ function initHelp() {
 }
 
 // ── Init ──
+
+// Register plugins before store/components so $persist is available in store init
+Alpine.plugin(Persist);
+Alpine.plugin(Focus);
 
 // Register store and components before Alpine processes the DOM
 initStore(Alpine);
