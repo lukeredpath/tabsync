@@ -128,33 +128,6 @@ export function deleteFolder(id) {
   save(data);
 }
 
-// Queries
-
-/** @param {string|null} folderId */
-export function getTracksByFolder(folderId) {
-  return getLibrary().tracks.filter(t => t.folderId === folderId);
-}
-
-export function getFavourites() {
-  return getLibrary().tracks.filter(t => t.favourite);
-}
-
-/**
- * Case-insensitive substring search across title and artist.
- * @param {string} query
- */
-export function searchTracks(query) {
-  const q = query.toLowerCase();
-  return getLibrary().tracks.filter(
-    t => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q)
-  );
-}
-
-/** @returns {Folder[]} all folders sorted alphabetically by name */
-export function getSortedFolders() {
-  return getLibrary().folders.slice().sort((a, b) => a.name.localeCompare(b.name));
-}
-
 // Export / import
 
 export function exportLibrary() {

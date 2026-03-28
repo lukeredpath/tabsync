@@ -450,6 +450,14 @@ export function initPlayer() {
     loadTrack(e.detail);
   });
 
+  // Track data updated (e.g. start offsets changed in editor) — refresh cached
+  // reference so the next Restart uses the new offsets without reloading video
+  document.addEventListener('tabsync:track-updated', e => {
+    if (currentTrack && currentTrack.id === e.detail.id) {
+      currentTrack = e.detail;
+    }
+  });
+
   // Bootstrap YouTube IFrame API
   bootstrapYouTubeAPI();
 }

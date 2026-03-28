@@ -95,6 +95,10 @@ export function initStore(Alpine) {
 
     setView(id) { this.view = id; },
 
+    openEditor(track = null) {
+      dispatch('tabsync:editor-open', track ? { track } : null);
+    },
+
     selectTrack(track) {
       this.selectedTrackId = track.id;
       dispatch('tabsync:track-selected', track);
@@ -104,26 +108,26 @@ export function initStore(Alpine) {
       const track = this.tracks.find(t => t.id === id);
       if (!track) return;
       updateTrack(id, { favourite: !track.favourite });
-      this.reload();
+      dispatch('tabsync:library-changed');
     },
 
     removeTrack(id, title) {
       if (!confirm(`Delete "${title}"?`)) return;
       if (this.selectedTrackId === id) this.selectedTrackId = null;
       deleteTrack(id);
-      this.reload();
+      dispatch('tabsync:library-changed');
     },
 
     addFolder(name) {
       createFolder(name);
-      this.reload();
+      dispatch('tabsync:library-changed');
     },
 
     renameFolder(id, newName, currentName) {
       const name = newName.trim();
       if (name && name !== currentName) {
         updateFolder(id, name);
-        this.reload();
+        dispatch('tabsync:library-changed');
       }
     },
 
@@ -131,7 +135,7 @@ export function initStore(Alpine) {
       if (!confirm(`Delete folder "${name}"? Tracks will be moved to All tracks.`)) return;
       deleteFolder(id);
       if (this.view === id) this.view = 'all';
-      this.reload();
+      dispatch('tabsync:library-changed');
     },
 
     exportLib() {
@@ -152,7 +156,7 @@ export function initStore(Alpine) {
       reader.onload = ev => {
         try {
           importLibrary(ev.target.result);
-          this.reload();
+          dispatch('tabsync:library-changed');
         } catch {
           alert('Could not import: file is not a valid TabSync library.');
         }

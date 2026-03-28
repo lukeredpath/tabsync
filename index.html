@@ -130,7 +130,7 @@
 
           <div class="track-actions">
             <button class="track-action-btn" title="Edit track"
-              @click.stop="$dispatch('tabsync:editor-open', { track })">✎</button>
+              @click.stop="$store.lib.openEditor(track)">✎</button>
             <button class="track-action-btn" title="Delete track"
               @click.stop="$store.lib.removeTrack(track.id, track.title)">×</button>
           </div>
@@ -145,7 +145,7 @@
 
     <footer id="sidebar-footer">
       <button id="add-track-btn" class="btn btn-primary"
-        @click="$dispatch('tabsync:editor-open', null)">+ Add Track</button>
+        @click="$store.lib.openEditor()">+ Add Track</button>
       <div id="library-actions">
         <button id="export-btn" class="btn btn-secondary"
           @click="$store.lib.exportLib()">Export</button>

@@ -51,8 +51,8 @@ export function initEditorComponent(Alpine) {
     _snapshot() {
       return JSON.stringify({
         title: this.title, artist: this.artist,
-        tabUrl: this.tabUrl, tabStart: this.tabStart,
-        audioUrl: this.audioUrl, audioStart: this.audioStart,
+        tabUrl: this.tabUrl, tabStart: parseFloat(this.tabStart) || 0,
+        audioUrl: this.audioUrl, audioStart: parseFloat(this.audioStart) || 0,
         folder: this.folderId, difficulty: this.selectedDifficulty,
         favourite: this.isFavourite,
       });
@@ -189,7 +189,8 @@ export function initEditorComponent(Alpine) {
       };
 
       if (this.editingTrack) {
-        updateTrack(this.editingTrack.id, fields);
+        const updated = updateTrack(this.editingTrack.id, fields);
+        dispatch('tabsync:track-updated', updated);
       } else {
         createTrack(fields);
       }
