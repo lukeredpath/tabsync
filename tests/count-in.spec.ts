@@ -1,5 +1,28 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { makeTrack, seedLibrary } from './fixtures';
+
+// Intercepts the YouTube IFrame API script and returns a minimal stub that:
+// - sets window.YT with a Player class whose onReady fires after ~50ms
+// - calls window.onYouTubeIframeAPIReady after ~10ms (simulating API bootstrap)
+const YT_MOCK = `
+  window.YT = {
+    Player: class {
+      constructor(id, config) {
+        this._config = config;
+        setTimeout(() => this._config.events?.onReady?.(), 50);
+      }
+      seekTo() {} pauseVideo() {} setPlaybackRate() {} getCurrentTime() { return 0; }
+    },
+    PlayerState: { ENDED: 0 }
+  };
+  setTimeout(() => window.onYouTubeIframeAPIReady?.(), 10);
+`;
+
+async function mockYouTubeAPI(page: Page): Promise<void> {
+  await page.route('https://www.youtube.com/iframe_api', route =>
+    route.fulfill({ contentType: 'text/javascript', body: YT_MOCK })
+  );
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -94,4 +117,48 @@ test('resetting count-in to "Follow global setting" persists countIn: null', asy
     return lib.tracks?.[0]?.countIn;
   });
   expect(countIn).toBeNull();
+});
+
+// ── Player button state ──
+// These tests require the YouTube API mock so the player can reach the Ready state.
+
+test('count-in button is active when track countIn is true, regardless of global setting', async ({ page }) => {
+  await mockYouTubeAPI(page);
+  await seedLibrary(page, {
+    version: 2,
+    tracks: [makeTrack('t1', 'Test Track', 'Test Artist', { countIn: true })],
+    folders: [],
+  });
+
+  await page.locator('.track-item').filter({ hasText: 'Test Track' }).click();
+  await expect(page.locator('#status')).toHaveText('Ready', { timeout: 5000 });
+  await expect(page.locator('#count-in-btn')).toHaveClass(/active/);
+});
+
+test('count-in button is inactive when track countIn is false, even with global on', async ({ page }) => {
+  await mockYouTubeAPI(page);
+  await page.evaluate(() => localStorage.setItem('tabsync-count-in', '1'));
+  await seedLibrary(page, {
+    version: 2,
+    tracks: [makeTrack('t1', 'Test Track', 'Test Artist', { countIn: false })],
+    folders: [],
+  });
+
+  await page.locator('.track-item').filter({ hasText: 'Test Track' }).click();
+  await expect(page.locator('#status')).toHaveText('Ready', { timeout: 5000 });
+  await expect(page.locator('#count-in-btn')).not.toHaveClass(/active/);
+});
+
+test('count-in button follows global setting when track countIn is null', async ({ page }) => {
+  await mockYouTubeAPI(page);
+  await page.evaluate(() => localStorage.setItem('tabsync-count-in', '1'));
+  await seedLibrary(page, {
+    version: 2,
+    tracks: [makeTrack('t1', 'Test Track', 'Test Artist', { countIn: null })],
+    folders: [],
+  });
+
+  await page.locator('.track-item').filter({ hasText: 'Test Track' }).click();
+  await expect(page.locator('#status')).toHaveText('Ready', { timeout: 5000 });
+  await expect(page.locator('#count-in-btn')).toHaveClass(/active/);
 });

@@ -191,6 +191,7 @@ function makeOnReady(capturedLoadId) {
 
     atStart = true;
     setControlsEnabled(true);
+    elCountInBtn.classList.toggle('active', effectiveCountIn);
     setStatus('Ready');
   };
 }
