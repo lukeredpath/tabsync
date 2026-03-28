@@ -16,6 +16,35 @@ test('create folder adds it to the folder nav', async ({ page }) => {
   await expect(page.locator('#folder-nav').getByText('Rock Classics', { exact: true })).toBeVisible();
 });
 
+test('new folder created via editor appears in nav when track is saved', async ({ page }) => {
+  await page.getByRole('button', { name: /add track/i }).click();
+  const dialog = page.getByRole('dialog', { name: /add track/i });
+
+  await dialog.getByLabel(/^title/i).fill('Comfortably Numb');
+  await dialog.getByLabel(/^artist/i).fill('Pink Floyd');
+  await dialog.getByLabel(/youtube url/i).first().fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+
+  await dialog.getByLabel(/folder/i).selectOption('+ New folder…');
+  await dialog.getByPlaceholder('Folder name…').fill('Rock Classics');
+
+  await dialog.getByRole('button', { name: /add track/i }).click();
+  await expect(dialog).toBeHidden();
+
+  await expect(page.locator('#folder-nav').getByText('Rock Classics', { exact: true })).toBeVisible();
+});
+
+test('new folder is not created when editor is cancelled', async ({ page }) => {
+  await page.getByRole('button', { name: /add track/i }).click();
+  const dialog = page.getByRole('dialog', { name: /add track/i });
+
+  await dialog.getByLabel(/folder/i).selectOption('+ New folder…');
+  await dialog.getByPlaceholder('Folder name…').fill('Rock Classics');
+
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+
+  await expect(page.locator('#folder-nav').getByText('Rock Classics', { exact: true })).toBeHidden();
+});
+
 test('delete folder reassigns its tracks to all tracks', async ({ page }) => {
   await seedLibrary(page, {
     version: 1,

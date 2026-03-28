@@ -1,7 +1,7 @@
 // ── Editor Alpine component ──
 // Registered as Alpine.data('editorUI') before Alpine.start().
 
-import { createTrack, updateTrack } from './library.js';
+import { createTrack, updateTrack, createFolder } from './library.js';
 import { extractVideoId, fetchOEmbed, dispatch } from './utils.js';
 
 const OEMBED_SUCCESS_TIMEOUT = 3000;
@@ -22,6 +22,7 @@ export function initEditorComponent(Alpine) {
     audioUrl: '',
     audioStart: 0,
     folderId: '',
+    newFolderName: '',
     selectedDifficulty: null,
     isFavourite: false,
     trackCountIn: '',    // '' = follow global, 'true' = always on, 'false' = always off
@@ -95,6 +96,7 @@ export function initEditorComponent(Alpine) {
       this.tabUrlInvalid  = false; this.audioUrlInvalid = false;
 
       this.audioSectionOpen = !!(track?.audioVideoId);
+      this.newFolderName    = '';
 
       this.open = true;
       this.openSnapshot = this._snapshot();
@@ -183,6 +185,12 @@ export function initEditorComponent(Alpine) {
     submit() {
       if (!this.validate()) return;
 
+      let resolvedFolderId = this.folderId || null;
+      if (this.folderId === '__new__' && this.newFolderName.trim()) {
+        const folder = createFolder(this.newFolderName.trim());
+        resolvedFolderId = folder.id;
+      }
+
       const fields = {
         title:        this.title.trim(),
         artist:       this.artist.trim(),
@@ -190,7 +198,7 @@ export function initEditorComponent(Alpine) {
         tabStart:     parseFloat(this.tabStart) || 0,
         audioVideoId: this.audioUrl.trim() ? extractVideoId(this.audioUrl.trim()) : null,
         audioStart:   parseFloat(this.audioStart) || 0,
-        folderId:     this.folderId || null,
+        folderId:     resolvedFolderId,
         favourite:    this.isFavourite,
         difficulty:   this.selectedDifficulty,
         countIn:      this.trackCountIn === 'true'  ? true

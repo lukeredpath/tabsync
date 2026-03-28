@@ -306,7 +306,11 @@
             <template x-for="folder in $store.lib.sortedFolders" :key="folder.id">
               <option :value="folder.id" x-text="folder.name"></option>
             </template>
+            <option value="__new__">+ New folder…</option>
           </select>
+          <input type="text" x-show="folderId === '__new__'" x-model="newFolderName"
+            placeholder="Folder name…" autocomplete="off"
+            x-effect="if (folderId === '__new__') $nextTick(() => $el.focus())" />
         </div>
         <div class="field-group">
           <label for="ef-count-in">Count-in</label>
