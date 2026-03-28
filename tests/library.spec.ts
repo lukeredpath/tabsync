@@ -1,21 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-function makeTrack(id: string, title: string, artist: string) {
-  return {
-    id,
-    title,
-    artist,
-    tabVideoId: 'dQw4w9WgXcQ',
-    tabStart: 0,
-    audioVideoId: null,
-    audioStart: 0,
-    folderId: null,
-    favourite: false,
-    difficulty: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-}
+import { makeTrack } from './fixtures';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
