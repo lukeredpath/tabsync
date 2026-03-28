@@ -4,7 +4,7 @@
 import { uuid } from './utils.js';
 
 const STORAGE_KEY = 'tabsync-library';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 /**
  * @typedef {Object} Track
@@ -20,6 +20,7 @@ const SCHEMA_VERSION = 1;
  * @property {number|null} difficulty     - 1–5
  * @property {string}      createdAt      - ISO timestamp
  * @property {string}      updatedAt      - ISO timestamp
+ * @property {boolean|null} countIn       - null = follow global toggle
  */
 
 /**
@@ -38,7 +39,12 @@ const SCHEMA_VERSION = 1;
 // ── Internal helpers ──
 
 function migrate(data) {
-  // Future version bumps: check data.version and transform as needed.
+  if ((data.version ?? 1) < 2) {
+    data.tracks = (data.tracks ?? []).map(t =>
+      'countIn' in t ? t : { ...t, countIn: null }
+    );
+    data.version = 2;
+  }
   return data;
 }
 

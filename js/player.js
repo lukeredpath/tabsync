@@ -28,7 +28,8 @@ let atStart = false;           // true after load/restart — count-in applies o
 let playbackRate = 1.0;
 const SPEED_KEY = 'tabsync-speed';
 
-let countInEnabled = false;
+let countInEnabled   = false;  // global preference (persisted)
+let effectiveCountIn = false;  // resolved per-track; consulted by togglePlay()
 let countInActive  = false;
 let countInTimer   = null;
 
@@ -47,6 +48,10 @@ let elSpeedSelect;
 
 function setStatus(msg) {
   elStatus.textContent = msg;
+}
+
+function resolveCountIn(track) {
+  return (track?.countIn != null) ? track.countIn : countInEnabled;
 }
 
 function setSpeed(rate) {
@@ -106,6 +111,7 @@ function loadTrack(track) {
   elPlayPause.textContent = '▶';
 
   currentTrack = track;
+  effectiveCountIn = resolveCountIn(track);
   const hasAudio = Boolean(track.audioVideoId);
   playersNeeded = hasAudio ? 2 : 1;
   playersReady  = 0;
@@ -283,7 +289,7 @@ function togglePlay() {
   }
   if (isPlaying) {
     pause();
-  } else if (countInEnabled && atStart) {
+  } else if (effectiveCountIn && atStart) {
     startCountIn();
   } else {
     play();
@@ -403,11 +409,13 @@ export function initPlayer() {
 
   // Count-in toggle (persisted)
   countInEnabled = localStorage.getItem(COUNT_IN_KEY) === '1';
+  effectiveCountIn = countInEnabled;
   elCountInBtn.classList.toggle('active', countInEnabled);
   elCountInBtn.addEventListener('click', () => {
     countInEnabled = !countInEnabled;
-    elCountInBtn.classList.toggle('active', countInEnabled);
     localStorage.setItem(COUNT_IN_KEY, countInEnabled ? '1' : '0');
+    effectiveCountIn = resolveCountIn(currentTrack);
+    elCountInBtn.classList.toggle('active', effectiveCountIn);
   });
 
   // Controls
@@ -458,6 +466,8 @@ export function initPlayer() {
   document.addEventListener('tabsync:track-updated', e => {
     if (currentTrack && currentTrack.id === e.detail.id) {
       currentTrack = e.detail;
+      effectiveCountIn = resolveCountIn(currentTrack);
+      elCountInBtn.classList.toggle('active', effectiveCountIn);
     }
   });
 

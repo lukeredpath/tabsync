@@ -35,6 +35,7 @@ Works for any tab-based practice: bass, guitar, or otherwise.
 | `folderId`     | string \| null | Reference to a Folder id   |
 | `favourite`    | boolean        |                            |
 | `difficulty`   | 1–5 \| null    |                            |
+| `countIn`      | boolean \| null | null = follow global setting |
 | `createdAt`    | ISO timestamp  |                            |
 | `updatedAt`    | ISO timestamp  |                            |
 
@@ -54,7 +55,7 @@ All data stored under a single `localStorage` key as a versioned JSON envelope:
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "tracks": [...],
   "folders": [...]
 }
@@ -106,7 +107,7 @@ Schema version is checked on load; a migration path is defined for future versio
   - Restart (seek both players to their configured start offsets)
   - Skip −5s / +5s
   - Playback speed: 0.5×, 0.75×, 1×, 1.25× (persisted)
-  - Count-in toggle: 3-second countdown overlay before playback from start (persisted)
+  - Count-in toggle: 3-second countdown overlay before playback from start (persisted); per-track override available in the editor (`null` = follow global, `true`/`false` = force on/off)
 - **Keyboard shortcuts**:
   - `Space` — play/pause
   - `←` / `→` — skip ±5s
@@ -133,7 +134,6 @@ Schema version is checked on load; a migration path is defined for future versio
 ## Deferred
 
 - **Auto sync-point detection**: scan the start of both videos to find a matching audio cue and auto-set offsets. Would require YouTube Data API (no free waveform access) or a user-assisted UI.
-- **Per-track count-in default**: store a `countIn` preference on the Track. When loaded, the player's count-in toggle reflects the track's preference; `null` means "follow the global toggle".
 
 ---
 

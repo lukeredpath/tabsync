@@ -23,6 +23,7 @@ export function initEditorComponent(Alpine) {
     folderId: '',
     selectedDifficulty: null,
     isFavourite: false,
+    trackCountIn: '',    // '' = follow global, 'true' = always on, 'false' = always off
 
     // ── oEmbed status ──
     tabOembedMsg: '',
@@ -54,7 +55,7 @@ export function initEditorComponent(Alpine) {
         tabUrl: this.tabUrl, tabStart: parseFloat(this.tabStart) || 0,
         audioUrl: this.audioUrl, audioStart: parseFloat(this.audioStart) || 0,
         folder: this.folderId, difficulty: this.selectedDifficulty,
-        favourite: this.isFavourite,
+        favourite: this.isFavourite, countIn: this.trackCountIn,
       });
     },
 
@@ -83,6 +84,9 @@ export function initEditorComponent(Alpine) {
       this.folderId          = track?.folderId ?? '';
       this.selectedDifficulty = track?.difficulty ?? null;
       this.isFavourite       = track?.favourite ?? false;
+      this.trackCountIn      = track?.countIn === true  ? 'true'
+                             : track?.countIn === false ? 'false'
+                             : '';
 
       this.tabOembedMsg   = ''; this.tabOembedType   = '';
       this.audioOembedMsg = ''; this.audioOembedType = '';
@@ -186,6 +190,9 @@ export function initEditorComponent(Alpine) {
         folderId:     this.folderId || null,
         favourite:    this.isFavourite,
         difficulty:   this.selectedDifficulty,
+        countIn:      this.trackCountIn === 'true'  ? true
+                    : this.trackCountIn === 'false' ? false
+                    : null,
       };
 
       if (this.editingTrack) {

@@ -11,6 +11,7 @@ export interface Track {
   folderId: string | null;
   favourite: boolean;
   difficulty: number | null;
+  countIn: boolean | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +40,7 @@ export function makeTrack(id: string, title: string, artist: string, overrides: 
     folderId: null,
     favourite: false,
     difficulty: null,
+    countIn: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,
@@ -50,7 +52,7 @@ export function makeFolder(id: string, name: string): Folder {
 }
 
 export const defaultLibrary: Library = {
-  version: 1,
+  version: 2,
   tracks: [
     makeTrack('track-1', 'Comfortably Numb', 'Pink Floyd', { favourite: true }),
     makeTrack('track-2', 'Smoke on the Water', 'Deep Purple', { folderId: 'folder-1' }),
