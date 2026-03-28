@@ -245,6 +245,49 @@
       <h2 id="ef-heading" x-text="heading"></h2>
 
       <div class="form-section">
+        <h3>Tab Video</h3>
+        <div class="field-group">
+          <label for="ef-tab-url">YouTube URL <span class="required">*</span></label>
+          <input type="url" id="ef-tab-url" x-ref="tabUrlInput" x-model="tabUrl"
+            :class="{ invalid: tabUrlInvalid }"
+            placeholder="https://www.youtube.com/watch?v=…"
+            autocomplete="off"
+            @blur="handleTabUrlBlur()" />
+          <div class="oembed-status" :class="tabOembedType" x-text="tabOembedMsg"></div>
+        </div>
+        <div class="field-group">
+          <label for="ef-tab-start">Start time (seconds)</label>
+          <input type="number" id="ef-tab-start" x-model.number="tabStart"
+            min="0" step="0.1" class="input--narrow" />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <button type="button" class="section-toggle" @click="audioSectionOpen = !audioSectionOpen"
+          :aria-expanded="audioSectionOpen">
+          <span class="section-toggle__chevron" :class="{ open: audioSectionOpen }">▸</span>
+          Audio Track
+          <span class="section-toggle__hint" x-show="!audioSectionOpen">optional</span>
+        </button>
+        <div x-show="audioSectionOpen" x-collapse>
+          <div class="field-group">
+            <label for="ef-audio-url">YouTube URL</label>
+            <input type="url" id="ef-audio-url" x-model="audioUrl"
+              :class="{ invalid: audioUrlInvalid }"
+              placeholder="https://www.youtube.com/watch?v=…"
+              autocomplete="off"
+              @blur="handleAudioUrlBlur()" />
+            <div class="oembed-status" :class="audioOembedType" x-text="audioOembedMsg"></div>
+          </div>
+          <div class="field-group">
+            <label for="ef-audio-start">Start time (seconds)</label>
+            <input type="number" id="ef-audio-start" x-model.number="audioStart"
+              min="0" step="0.1" class="input--narrow" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
         <h3>Details</h3>
         <div class="field-group">
           <label for="ef-title">Title <span class="required">*</span></label>
@@ -294,42 +337,6 @@
               @click="isFavourite = !isFavourite">
             </button>
           </div>
-        </div>
-      </div>
-
-      <div class="form-section">
-        <h3>Tab Video</h3>
-        <div class="field-group">
-          <label for="ef-tab-url">YouTube URL <span class="required">*</span></label>
-          <input type="url" id="ef-tab-url" x-ref="tabUrlInput" x-model="tabUrl"
-            :class="{ invalid: tabUrlInvalid }"
-            placeholder="https://www.youtube.com/watch?v=…"
-            autocomplete="off"
-            @blur="handleTabUrlBlur()" />
-          <div class="oembed-status" :class="tabOembedType" x-text="tabOembedMsg"></div>
-        </div>
-        <div class="field-group">
-          <label for="ef-tab-start">Start time (seconds)</label>
-          <input type="number" id="ef-tab-start" x-model.number="tabStart"
-            min="0" step="0.1" class="input--narrow" />
-        </div>
-      </div>
-
-      <div class="form-section">
-        <h3>Audio Track <span class="optional">(optional — if omitted, tab video audio is used)</span></h3>
-        <div class="field-group">
-          <label for="ef-audio-url">YouTube URL</label>
-          <input type="url" id="ef-audio-url" x-model="audioUrl"
-            :class="{ invalid: audioUrlInvalid }"
-            placeholder="https://www.youtube.com/watch?v=…"
-            autocomplete="off"
-            @blur="handleAudioUrlBlur()" />
-          <div class="oembed-status" :class="audioOembedType" x-text="audioOembedMsg"></div>
-        </div>
-        <div class="field-group">
-          <label for="ef-audio-start">Start time (seconds)</label>
-          <input type="number" id="ef-audio-start" x-model.number="audioStart"
-            min="0" step="0.1" class="input--narrow" />
         </div>
       </div>
 

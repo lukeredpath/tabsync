@@ -12,6 +12,7 @@ export function initEditorComponent(Alpine) {
     open: false,
     editingTrack: null,   // null → Add Track, object → Edit Track
     backdropMousedown: false,
+    audioSectionOpen: false,
 
     // ── Form fields ──
     title: '',
@@ -93,11 +94,13 @@ export function initEditorComponent(Alpine) {
       this.titleInvalid   = false; this.artistInvalid  = false;
       this.tabUrlInvalid  = false; this.audioUrlInvalid = false;
 
+      this.audioSectionOpen = !!(track?.audioVideoId);
+
       this.open = true;
       this.openSnapshot = this._snapshot();
 
       this.$nextTick(() => {
-        const refs = [this.$refs.titleInput, this.$refs.artistInput, this.$refs.tabUrlInput];
+        const refs = [this.$refs.tabUrlInput, this.$refs.titleInput, this.$refs.artistInput];
         (refs.find(el => el && !el.value) ?? refs[0])?.focus();
       });
     },

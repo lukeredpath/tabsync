@@ -723,6 +723,42 @@ body.sidebar-collapsed #sidebar-open-btn {
   font-weight: 400;
 }
 
+.section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  width: 100%;
+  text-align: left;
+}
+
+.section-toggle:hover { color: var(--text); }
+
+.section-toggle__chevron {
+  display: inline-block;
+  font-size: 14px;
+  transition: transform 0.15s ease;
+}
+
+.section-toggle__chevron.open { transform: rotate(90deg); }
+
+.section-toggle__hint {
+  font-size: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 .field-group {
   display: flex;
   flex-direction: column;
