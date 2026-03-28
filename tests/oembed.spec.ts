@@ -71,6 +71,14 @@ test('does not overwrite fields the user has already filled in', async ({ page }
   await expect(dialog.locator('#ef-artist')).toHaveValue('My Artist');
 });
 
+test('strips second hyphen-separated suffix from title', async ({ page }) => {
+  await mockOEmbed(page, 'TOOL - Schism - Bass Cover');
+  const dialog = await openAddTrackAndEnterUrl(page, DUMMY_URL);
+
+  await expect(dialog.locator('#ef-title')).toHaveValue('Schism', { timeout: 5000 });
+  await expect(dialog.locator('#ef-artist')).toHaveValue('TOOL', { timeout: 5000 });
+});
+
 test('does not use YouTube channel name as artist', async ({ page }) => {
   await mockOEmbed(page, 'Comfortably Numb (Bass Cover)', 'TalkingBassOfficial');
   const dialog = await openAddTrackAndEnterUrl(page, DUMMY_URL);

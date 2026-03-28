@@ -49,7 +49,9 @@ export function parseVideoTitle(rawTitle) {
 
   const match = rawTitle.match(/^(.+?)\s[-–—]\s(.+)$/);
   if (!match) return { artist: null, title: clean(rawTitle) };
-  return { artist: clean(match[1]), title: clean(match[2]) };
+  // Strip a second " - ..." from the title (e.g. "Schism - Bass Cover" → "Schism")
+  const titleRaw = match[2].replace(/\s[-–—]\s.*$/, '').trim();
+  return { artist: clean(match[1]), title: clean(titleRaw) };
 }
 
 /**
