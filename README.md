@@ -23,8 +23,9 @@ Works for any tab-based practice — bass, guitar, or otherwise.
 - Tab video fills the main area; if you've added an audio track, it plays in a small draggable overlay (drag with mouse or touch) with the tab video muted
 - Play, pause, restart, and skip ±5 seconds with on-screen controls or keyboard shortcuts
 - Playback speed control — 0.5×, 0.75×, 1×, or 1.25×; persisted across sessions
-- Count-in mode — optional 3-second countdown before playback starts
+- Count-in mode — optional 3-second countdown before playback starts; can be overridden per track
 - Both videos start together from their configured offsets
+- If you seek in the tab video using the player's native controls, the audio track resyncs automatically
 
 ### Keyboard shortcuts
 | Key | Action |
@@ -77,7 +78,6 @@ Because data lives in `localStorage`, it is tied to the browser profile you use.
 ## Planned features
 
 - Auto-detect the correct sync offset by scanning the start of each video
-- Per-track count-in default (override the global toggle on a track-by-track basis)
 
 ## License
 

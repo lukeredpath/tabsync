@@ -196,12 +196,29 @@ function makeOnReady(capturedLoadId) {
   };
 }
 
+const RESYNC_THRESHOLD = 1.0; // seconds of drift before resyncing audio
+
+function resyncAudio() {
+  if (!audioPlayer || !currentTrack) return;
+  const tabTime = tabPlayer.getCurrentTime();
+  const audioTarget = tabTime - currentTrack.tabStart + currentTrack.audioStart;
+  if (Math.abs(audioPlayer.getCurrentTime() - audioTarget) < RESYNC_THRESHOLD) return;
+  audioPlayer.seekTo(audioTarget, true);
+}
+
 function makeOnStateChange(capturedLoadId) {
   return function onStateChange(event) {
     if (capturedLoadId !== loadId) return;
     if (event.data === YT.PlayerState.ENDED) {
       pause();
       setStatus('Ended');
+    }
+    if (event.data === YT.PlayerState.PLAYING && audioPlayer) {
+      resyncAudio();
+    }
+    if (event.data === YT.PlayerState.PAUSED && audioPlayer) {
+      resyncAudio();
+      audioPlayer.pauseVideo();
     }
   };
 }
