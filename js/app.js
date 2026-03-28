@@ -1,8 +1,9 @@
 // ── TabSync — entry point ──
 
-import { initLibraryUI } from './ui-library.js';
-import { initEditorUI }  from './ui-editor.js';
-import { initPlayer }    from './player.js';
+import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3/dist/module.esm.js';
+import { initStore }   from './store.js';
+import { initEditorUI } from './ui-editor.js';
+import { initPlayer }   from './player.js';
 
 // ── Theme ──
 
@@ -83,8 +84,17 @@ function initHelp() {
 
 // ── Init ──
 
+// Register store before Alpine processes the DOM
+initStore(Alpine);
+
+// Populate editor DOM before Alpine.start() scans the page
+initEditorUI();
+
 initTheme();
 initHelp();
-initLibraryUI();
-initEditorUI();
+
+// Expose Alpine globally (useful for devtools)
+window.Alpine = Alpine;
+Alpine.start();
+
 initPlayer();

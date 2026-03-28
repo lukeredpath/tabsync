@@ -6,27 +6,86 @@
   <title>TabSync</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body x-data>
 
   <!-- ── Sidebar ── -->
-  <aside id="sidebar">
+  <aside id="sidebar" :class="{ collapsed: $store.lib.sidebarCollapsed }">
     <header id="sidebar-header">
       <span class="app-title">TabSync</span>
       <button id="help-btn" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">?</button>
       <button id="theme-toggle-btn" title="Toggle light/dark theme" aria-label="Toggle light/dark theme">&#9790;</button>
-      <button id="sidebar-collapse-btn" title="Collapse library" aria-label="Collapse library">&#x2715;</button>
+      <button id="sidebar-collapse-btn" title="Collapse library" aria-label="Collapse library"
+        @click="$store.lib.sidebarCollapsed = true">&#x2715;</button>
     </header>
 
     <div id="sidebar-search">
-      <input type="search" id="search-input" placeholder="Search tracks…" autocomplete="off" />
+      <input type="search" id="search-input" placeholder="Search tracks…" autocomplete="off"
+        x-model="$store.lib.searchQuery" />
     </div>
 
     <nav id="folder-nav">
-      <!-- Populated by ui-library.js -->
+      <!-- All tracks -->
+      <div class="folder-item" :class="{ active: $store.lib.view === 'all' }"
+        @click="$store.lib.setView('all')">
+        <span class="folder-item__name">All tracks</span>
+        <span class="folder-count" x-text="$store.lib.trackCount"></span>
+      </div>
+
+      <!-- Favourites -->
+      <div class="folder-item" :class="{ active: $store.lib.view === 'favourites' }"
+        @click="$store.lib.setView('favourites')">
+        <span class="folder-item__name">Favourites</span>
+        <span class="folder-count" x-text="$store.lib.favouriteCount"></span>
+      </div>
+
+      <!-- User folders -->
+      <template x-for="folder in $store.lib.sortedFolders" :key="folder.id">
+        <div class="folder-item"
+          x-data="{ renaming: false, draftName: '', renameCancelled: false }"
+          :class="{ active: $store.lib.view === folder.id }"
+          @click="if (!renaming) $store.lib.setView(folder.id)">
+
+          <template x-if="!renaming">
+            <span class="folder-item__name" x-text="folder.name"></span>
+          </template>
+          <template x-if="renaming">
+            <input type="text" class="folder-rename-input"
+              x-model="draftName"
+              x-init="$nextTick(() => { $el.focus(); $el.select(); })"
+              @blur="if (!renameCancelled) $store.lib.renameFolder(folder.id, draftName, folder.name); renaming = false; renameCancelled = false"
+              @keydown.enter.prevent="$el.blur()"
+              @keydown.escape="renameCancelled = true; $el.blur()" />
+          </template>
+
+          <span class="folder-count" x-text="$store.lib.folderTrackCount(folder.id)"></span>
+          <span class="folder-item__actions">
+            <button class="folder-item__btn" title="Rename folder"
+              @click.stop="renaming = true; draftName = folder.name">✎</button>
+            <button class="folder-item__btn" title="Delete folder"
+              @click.stop="$store.lib.removeFolder(folder.id, folder.name)">×</button>
+          </span>
+        </div>
+      </template>
+
+      <!-- New folder -->
+      <div x-data="{ creatingFolder: false, newFolderName: '', cancelled: false }">
+        <div id="new-folder-trigger" class="folder-item folder-item--new"
+          x-show="!creatingFolder"
+          @click="creatingFolder = true; newFolderName = ''; cancelled = false; $nextTick(() => $refs.newFolderInput.focus())">
+          + New folder
+        </div>
+        <div class="new-folder-row" x-show="creatingFolder">
+          <input type="text" placeholder="Folder name…" x-ref="newFolderInput"
+            x-model="newFolderName"
+            @blur="if (!cancelled && newFolderName.trim()) $store.lib.addFolder(newFolderName); creatingFolder = false; newFolderName = ''; cancelled = false"
+            @keydown.enter.prevent="$el.blur()"
+            @keydown.escape="cancelled = true; $el.blur()" />
+        </div>
+      </div>
     </nav>
 
     <div id="track-list-controls">
-      <select id="sort-select">
+      <select id="sort-select" x-model="$store.lib.sortBy">
         <option value="createdAt-desc">Recently added</option>
         <option value="title-asc">Title A–Z</option>
         <option value="artist-asc">Artist A–Z</option>
@@ -34,33 +93,77 @@
       </select>
       <div id="difficulty-filter">
         <span class="filter-label">Max difficulty:</span>
-        <button class="filter-dot" data-difficulty="1" title="Show up to difficulty 1" aria-label="Show up to difficulty 1"></button>
-        <button class="filter-dot" data-difficulty="2" title="Show up to difficulty 2" aria-label="Show up to difficulty 2"></button>
-        <button class="filter-dot" data-difficulty="3" title="Show up to difficulty 3" aria-label="Show up to difficulty 3"></button>
-        <button class="filter-dot" data-difficulty="4" title="Show up to difficulty 4" aria-label="Show up to difficulty 4"></button>
-        <button class="filter-dot" data-difficulty="5" title="Show up to difficulty 5" aria-label="Show up to difficulty 5"></button>
+        <template x-for="n in [1, 2, 3, 4, 5]">
+          <button class="filter-dot"
+            :class="{ filled: $store.lib.difficultyFilter !== null && n <= $store.lib.difficultyFilter }"
+            :title="`Show up to difficulty ${n}`"
+            :aria-label="`Show up to difficulty ${n}`"
+            @click="$store.lib.difficultyFilter = $store.lib.difficultyFilter === n ? null : n">
+          </button>
+        </template>
       </div>
     </div>
 
     <div id="track-list">
-      <!-- Populated by ui-library.js -->
+      <template x-for="track in $store.lib.filteredTracks" :key="track.id">
+        <div class="track-item"
+          :class="{ active: $store.lib.selectedTrackId === track.id }"
+          @click="$store.lib.selectTrack(track)">
+
+          <div class="track-info">
+            <div class="track-title" x-text="track.title"></div>
+            <div class="track-artist" x-text="track.artist"></div>
+          </div>
+
+          <div class="track-meta">
+            <span class="difficulty-badge"
+              x-show="track.difficulty != null"
+              x-text="'●'.repeat(track.difficulty || 0)">
+            </span>
+            <button class="favourite-btn"
+              :class="{ active: track.favourite }"
+              :title="track.favourite ? 'Remove from favourites' : 'Add to favourites'"
+              x-text="track.favourite ? '★' : '☆'"
+              @click.stop="$store.lib.toggleFavourite(track.id)">
+            </button>
+          </div>
+
+          <div class="track-actions">
+            <button class="track-action-btn" title="Edit track"
+              @click.stop="$dispatch('tabsync:editor-open', { track })">✎</button>
+            <button class="track-action-btn" title="Delete track"
+              @click.stop="$store.lib.removeTrack(track.id, track.title)">×</button>
+          </div>
+        </div>
+      </template>
+
+      <div class="empty-state"
+        x-show="$store.lib.filteredTracks.length === 0"
+        x-text="$store.lib.emptyMessage">
+      </div>
     </div>
 
     <footer id="sidebar-footer">
-      <button id="add-track-btn" class="btn btn-primary">+ Add Track</button>
+      <button id="add-track-btn" class="btn btn-primary"
+        @click="$dispatch('tabsync:editor-open', null)">+ Add Track</button>
       <div id="library-actions">
-        <button id="export-btn" class="btn btn-secondary">Export</button>
-        <button id="import-btn" class="btn btn-secondary">Import</button>
+        <button id="export-btn" class="btn btn-secondary"
+          @click="$store.lib.exportLib()">Export</button>
+        <button id="import-btn" class="btn btn-secondary"
+          @click="$refs.importInput.click()">Import</button>
       </div>
-      <input type="file" id="import-file-input" accept=".json,application/json" hidden>
+      <input type="file" id="import-file-input" x-ref="importInput"
+        accept=".json,application/json" hidden
+        @change="$store.lib.importFromFile($event.target.files[0]); $event.target.value = ''" />
     </footer>
   </aside>
 
   <!-- ── Sidebar collapsed tab ── -->
-  <button id="sidebar-open-btn" title="Open library" aria-label="Open library">&#9776;</button>
+  <button id="sidebar-open-btn" title="Open library" aria-label="Open library"
+    @click="$store.lib.sidebarCollapsed = false">&#9776;</button>
 
   <!-- ── Main ── -->
-  <main id="main">
+  <main id="main" @click="if (window.innerWidth <= 768) $store.lib.sidebarCollapsed = true">
 
     <!-- Stage: video fills this area -->
     <div id="stage">
