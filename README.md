@@ -72,7 +72,7 @@ make stop
 
 TabSync is a fully client-side web app — there is no backend. Your track library is stored in your browser's `localStorage`. The YouTube IFrame API handles video playback.
 
-Because data lives in `localStorage`, it is tied to the browser profile you use. If you clear your browser data, your library will be lost. An export/import feature is planned to provide a backup path.
+Because data lives in `localStorage`, it is tied to the browser profile you use. If you clear your browser data, your library will be lost. Use the export feature to keep a backup.
 
 ## Planned features
 

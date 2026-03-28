@@ -4,13 +4,14 @@
 
 A local, client-side web app for musicians practising with YouTube tab videos. Plays a tab video (full screen, muted) synced with an optional original audio track (small overlay). Includes a persistent library of tracks with folders, favourites, and difficulty ratings.
 
-See `SPEC.md` for full requirements and `PLAN.md` for the phased development plan.
+See `SPEC.md` for full requirements.
 
 ## Architecture
 
 - **Fully client-side** — no backend, no build step.
 - **Persistence**: `localStorage` (versioned JSON via `library.js`).
 - **YouTube IFrame API** for player control; **YouTube oEmbed** for metadata auto-fetch (no API key needed).
+- **Alpine.js** for reactive UI — `$store.lib` (in `js/store.js`) is the reactive library store; `editorUI` (in `js/editor.js`) is the add/edit track Alpine component.
 - Served locally via `make start` (Python 3 `http.server`), which opens Safari at `http://<hostname>.local:8080`.
 
 ## Key files
@@ -21,9 +22,9 @@ See `SPEC.md` for full requirements and `PLAN.md` for the phased development pla
 | `css/styles.css` | All styles; dark/light themes via CSS custom properties |
 | `js/app.js` | Entry point; wires modules together; theme logic |
 | `js/library.js` | Data layer — CRUD, localStorage, schema migration |
-| `js/player.js` | YouTube player wrapper and sync engine (Phase 4) |
-| `js/ui-library.js` | Sidebar, folder nav, track list, search, sort (Phase 3) |
-| `js/ui-editor.js` | Add/edit track modal form (Phase 3) |
+| `js/player.js` | YouTube player wrapper and playback controls |
+| `js/store.js` | Alpine.js reactive store (`$store.lib`) — library UI state |
+| `js/editor.js` | Alpine.js component (`editorUI`) — add/edit track modal |
 | `js/utils.js` | UUID generation, YouTube URL parsing, oEmbed fetch |
 | `Makefile` | `make start` / `make stop` / `make serve` / `make test` |
 | `playwright.config.ts` | Playwright test configuration |
@@ -38,7 +39,7 @@ make serve   # headless server only (no browser open) — used by Playwright
 make test    # run Playwright tests, then open report
 ```
 
-No build step. ES modules loaded directly by the browser (`type="module"`). Target browser is Safari (Chrome as fallback if Safari has ITP issues with YouTube embeds).
+No build step. ES modules loaded directly by the browser (`type="module"`). Target browser is Chrome (Safari may have issues depending on YouTube's embed policy).
 
 ## Testing
 
@@ -75,8 +76,8 @@ The first word after the `type:` prefix must be capitalised.
 
 ## Coding conventions
 
-- Vanilla JS, no framework, no build step.
+- Vanilla JS + Alpine.js, no build step.
 - ES modules throughout (`import`/`export`).
 - JSDoc type annotations on public functions in `library.js` and `utils.js`.
 - CSS custom properties for all theme-sensitive values — never hardcode colours.
-- Keep modules focused: data layer in `library.js`, player logic in `player.js`, UI in `ui-*.js`.
+- Keep modules focused: data layer in `library.js`, player logic in `player.js`, Alpine store in `store.js`, Alpine editor component in `editor.js`.

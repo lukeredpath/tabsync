@@ -15,6 +15,7 @@ Works for any tab-based practice: bass, guitar, or otherwise.
 - **Served locally** via Python 3's built-in HTTP server. A `Makefile` provides `start`/`stop` targets that open the app in Safari at `http://<hostname>.local:<port>`.
 - **YouTube IFrame API** for player control.
 - **YouTube oEmbed API** (`https://www.youtube.com/oembed`) for auto-fetching track metadata — CORS-enabled, no API key required.
+- **Alpine.js** for reactive UI — `$store.lib` is the reactive library store; `editorUI` is the add/edit track component.
 
 ---
 
@@ -59,7 +60,7 @@ All data stored under a single `localStorage` key as a versioned JSON envelope:
 }
 ```
 
-Schema version is checked on load; a migration path should be defined for future version bumps.
+Schema version is checked on load; a migration path is defined for future version bumps.
 
 ---
 
@@ -72,6 +73,7 @@ Schema version is checked on load; a migration path should be defined for future
 - Mark tracks as favourites.
 - Set a difficulty rating (1–5).
 - Create and rename folders.
+- Export library as a dated JSON file; import from JSON (replaces current data with confirmation).
 
 ### Track editor / add form
 
@@ -91,17 +93,20 @@ Schema version is checked on load; a migration path should be defined for future
   - Edit / delete actions
 - Search bar: basic substring match across title and artist (case-insensitive).
 - Sort options: title A–Z, artist A–Z, difficulty, recently added.
+- Difficulty filter: click a dot to show only tracks up to that difficulty.
 - Empty states for no tracks, no search results, empty folders.
 
 ### Player
 
 - **Tab video**: fills the main stage area, muted if an audio video is configured.
-- **Audio video**: small draggable overlay (bottom-right default position), visible only when an audio video is configured.
+- **Audio video**: small draggable overlay (bottom-right default position), visible only when an audio video is configured. Drag with mouse or touch; position persists across track changes.
 - **Sync engine**: none — both players are started simultaneously and left to play freely. No automatic seeking during playback; any drift is accepted rather than risk interrupting practice with a jump.
 - **Controls**:
   - Play / Pause
   - Restart (seek both players to their configured start offsets)
   - Skip −5s / +5s
+  - Playback speed: 0.5×, 0.75×, 1×, 1.25× (persisted)
+  - Count-in toggle: 3-second countdown overlay before playback from start (persisted)
 - **Keyboard shortcuts**:
   - `Space` — play/pause
   - `←` / `→` — skip ±5s
@@ -113,35 +118,32 @@ Schema version is checked on load; a migration path should be defined for future
 - Defaults to the system preference (`prefers-color-scheme`).
 - A toggle button in the sidebar header lets the user override; the choice is persisted in `localStorage`.
 
-### Known constraints (carried over from prototype)
+---
+
+## Known constraints
 
 - `controls: 0` is broken for non-partner embeds — must use `controls: 1`.
-- Safari's ITP was noted as a blocker during early prototyping — to be verified; Chrome is a known-good fallback if Safari has issues.
 - `start` playerVar is integer-only; use `seekTo()` in `onReady` for fractional precision.
 - The audio overlay wrapper div must have explicit `width: 100%; height: 100%` or the iframe renders at zero size.
+- Some videos have embedding disabled by the uploader; the player surfaces this as a readable error rather than silently failing.
+- Safari support depends on YouTube's embed policy — Chrome is the known-good target browser.
 
 ---
 
-## Stretch Goals
+## Deferred
 
-1. **Favourites quick-access** — dedicated "Favourites" view in the sidebar (included in core).
-2. **Difficulty rating** — 1–5 display and filter (included in core).
-3. **Auto-fetch metadata** — via oEmbed on URL entry (included in core).
-4. **Auto sync-point detection** — scan the start of both videos to find a matching audio cue and auto-set offsets. Complex; deferred.
-5. **Export / import** — download library as JSON, import from JSON file. Useful for backup and migrating between machines.
-6. **Per-track count-in default** — store a count-in preference on the Track (e.g. `countIn: boolean | null`). When a track is loaded, the player's count-in toggle reflects the track's preference; null means "follow the global toggle".
+- **Auto sync-point detection**: scan the start of both videos to find a matching audio cue and auto-set offsets. Would require YouTube Data API (no free waveform access) or a user-assisted UI.
+- **Per-track count-in default**: store a `countIn` preference on the Track. When loaded, the player's count-in toggle reflects the track's preference; `null` means "follow the global toggle".
 
 ---
 
-## Serving
+## Makefile targets
 
-### Makefile targets
-
-| Target       | Description                                                                           |
-| ------------ | ------------------------------------------------------------------------------------- |
-| `make start` | Start Python 3 HTTP server (port 8080), open `http://<hostname>.local:8080` in Safari |
-| `make stop`  | Kill the server process                                                               |
+| Target        | Description                                                                            |
+| ------------- | -------------------------------------------------------------------------------------- |
+| `make start`  | Start Python 3 HTTP server (port 8080), open `http://<hostname>.local:8080` in Safari |
+| `make stop`   | Kill the server process                                                                |
+| `make serve`  | Headless server only (no browser open) — used by Playwright                           |
+| `make test`   | Run Playwright tests, then open report                                                 |
 
 Port is configurable via a `PORT` variable (default `8080`).
-
-Server PID is written to `.server.pid` so `stop` can find and kill it cleanly.
