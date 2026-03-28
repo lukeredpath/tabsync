@@ -226,9 +226,102 @@
   </div>
 
   <!-- ── Editor modal ── -->
-  <div id="editor-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ef-heading">
+  <div id="editor-overlay" x-data="editorUI" x-show="open" style="display:none"
+    role="dialog" aria-modal="true" aria-labelledby="ef-heading"
+    @mousedown="backdropMousedown = $event.target === $el"
+    @click="if ($event.target === $el && backdropMousedown) tryClose()">
     <div id="editor-modal">
-      <!-- Populated by ui-editor.js -->
+
+      <h2 id="ef-heading" x-text="heading"></h2>
+
+      <div class="form-section">
+        <h3>Details</h3>
+        <div class="field-group">
+          <label for="ef-title">Title <span class="required">*</span></label>
+          <input type="text" id="ef-title" x-ref="titleInput" x-model="title"
+            :class="{ invalid: titleInvalid }" autocomplete="off" />
+        </div>
+        <div class="field-group">
+          <label for="ef-artist">Artist <span class="required">*</span></label>
+          <input type="text" id="ef-artist" x-ref="artistInput" x-model="artist"
+            :class="{ invalid: artistInvalid }" autocomplete="off" />
+        </div>
+        <div class="field-group">
+          <label for="ef-folder">Folder</label>
+          <select id="ef-folder" x-model="folderId">
+            <option value="">— No folder —</option>
+            <template x-for="folder in $store.lib.sortedFolders" :key="folder.id">
+              <option :value="folder.id" x-text="folder.name"></option>
+            </template>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Difficulty</label>
+            <div class="difficulty-picker" id="ef-difficulty-picker">
+              <template x-for="n in [1, 2, 3, 4, 5]">
+                <button type="button" class="difficulty-dot"
+                  :class="{ filled: selectedDifficulty !== null && n <= selectedDifficulty }"
+                  x-text="n"
+                  @click="toggleDifficulty(n)">
+                </button>
+              </template>
+            </div>
+          </div>
+          <div class="field-group field-group--top-align">
+            <label>Favourite</label>
+            <button type="button" id="ef-favourite" class="favourite-toggle"
+              :class="{ active: isFavourite }"
+              x-text="isFavourite ? '★' : '☆'"
+              @click="isFavourite = !isFavourite">
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Tab Video</h3>
+        <div class="field-group">
+          <label for="ef-tab-url">YouTube URL <span class="required">*</span></label>
+          <input type="url" id="ef-tab-url" x-ref="tabUrlInput" x-model="tabUrl"
+            :class="{ invalid: tabUrlInvalid }"
+            placeholder="https://www.youtube.com/watch?v=…"
+            autocomplete="off"
+            @blur="handleTabUrlBlur()" />
+          <div class="oembed-status" :class="tabOembedType" x-text="tabOembedMsg"></div>
+        </div>
+        <div class="field-group">
+          <label for="ef-tab-start">Start time (seconds)</label>
+          <input type="number" id="ef-tab-start" x-model.number="tabStart"
+            min="0" step="0.1" class="input--narrow" />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Audio Track <span class="optional">(optional — if omitted, tab video audio is used)</span></h3>
+        <div class="field-group">
+          <label for="ef-audio-url">YouTube URL</label>
+          <input type="url" id="ef-audio-url" x-model="audioUrl"
+            :class="{ invalid: audioUrlInvalid }"
+            placeholder="https://www.youtube.com/watch?v=…"
+            autocomplete="off"
+            @blur="handleAudioUrlBlur()" />
+          <div class="oembed-status" :class="audioOembedType" x-text="audioOembedMsg"></div>
+        </div>
+        <div class="field-group">
+          <label for="ef-audio-start">Start time (seconds)</label>
+          <input type="number" id="ef-audio-start" x-model.number="audioStart"
+            min="0" step="0.1" class="input--narrow" />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="ef-cancel" class="btn-secondary" @click="tryClose()">Cancel</button>
+        <button type="button" id="ef-submit" class="btn btn-primary btn--auto-width"
+          x-text="submitLabel" @click="submit()">
+        </button>
+      </div>
+
     </div>
   </div>
 
