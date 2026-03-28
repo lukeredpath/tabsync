@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TabSync — Codebase Guide</title>
+  <style>
+    :root {
+      --bg: #faf9f7;
+      --surface: #fff;
+      --border: #e5e2dc;
+      --text: #1a1a1a;
+      --text-mid: #4a4a4a;
+      --text-muted: #888;
+      --accent: #d97706;
+      --accent-light: #fef3c7;
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+      --code-comment: #6c7086;
+      --code-keyword: #cba6f7;
+      --code-string: #a6e3a1;
+      --code-fn: #89b4fa;
+      --code-attr: #fab387;
+      --code-value: #f38ba8;
+      --note-bg: #eff6ff;
+      --note-border: #3b82f6;
+      --tip-bg: #f0fdf4;
+      --tip-border: #22c55e;
+      --warn-bg: #fffbeb;
+      --warn-border: #f59e0b;
+      --sidebar-width: 260px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── Layout ── */
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-title {
+      font-family: 'system-ui', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0 24px 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .toc-section {
+      margin-bottom: 4px;
+    }
+
+    .toc-section-label {
+      font-family: 'system-ui', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 24px 2px;
+    }
+
+    .toc a {
+      display: block;
+      font-family: 'system-ui', sans-serif;
+      font-size: 13px;
+      color: var(--text-mid);
+      text-decoration: none;
+      padding: 4px 24px;
+      border-left: 2px solid transparent;
+    }
+
+    .toc a:hover {
+      color: var(--accent);
+      background: var(--accent-light);
+      border-left-color: var(--accent);
+    }
+
+    .toc a .file {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+      font-family: 'Menlo', monospace;
+    }
+
+    /* ── Main content ── */
+
+    .content {
+      flex: 1;
+      max-width: 860px;
+      padding: 56px 64px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      font-style: italic;
+    }
+
+    h2 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 56px 0 16px;
+      padding-top: 56px;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    h2:first-of-type { border-top: none; padding-top: 0; }
+
+    h3 {
+      font-family: 'system-ui', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin: 28px 0 10px;
+      color: var(--text);
+    }
+
+    p { margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol {
+      margin: 0 0 16px 24px;
+    }
+
+    li { margin-bottom: 4px; }
+
+    a { color: var(--accent); }
+
+    /* ── File badge ── */
+
+    .file-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Menlo', 'Monaco', monospace;
+      font-size: 12px;
+      background: var(--code-bg);
+      color: #a6e3a1;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .file-badge::before {
+      content: '📄';
+      font-size: 11px;
+    }
+
+    /* ── Code blocks ── */
+
+    pre {
+      background: var(--code-bg);
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 12px 0 20px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+      color: var(--code-text);
+    }
+
+    p code, li code, td code {
+      font-family: 'Menlo', 'Monaco', monospace;
+      font-size: 13px;
+      background: #f0ece6;
+      color: #7c3aed;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* Syntax colouring — manual */
+    .kw  { color: var(--code-keyword); }   /* keywords: import, export, const, function, return */
+    .fn  { color: var(--code-fn); }        /* function names */
+    .str { color: var(--code-string); }    /* strings */
+    .cmt { color: var(--code-comment); font-style: italic; } /* comments */
+    .attr { color: var(--code-attr); }     /* html attributes / alpine directives */
+    .val { color: var(--code-value); }     /* attribute values */
+    .num { color: #fab387; }               /* numbers */
+    .tag { color: #89dceb; }               /* html tags */
+    .plain { color: var(--code-text); }
+
+    /* ── Callout boxes ── */
+
+    .callout {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 6px 6px 0;
+      margin: 20px 0;
+      font-family: 'system-ui', sans-serif;
+      font-size: 14px;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .callout.note   { background: var(--note-bg); border-color: var(--note-border); }
+    .callout.tip    { background: var(--tip-bg);  border-color: var(--tip-border); }
+    .callout.warn   { background: var(--warn-bg); border-color: var(--warn-border); }
+
+    .callout.note .callout-title   { color: var(--note-border); }
+    .callout.tip .callout-title    { color: #16a34a; }
+    .callout.warn .callout-title   { color: #d97706; }
+
+    /* ── Tables ── */
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-family: 'system-ui', sans-serif;
+      font-size: 13px;
+    }
+
+    th {
+      background: #f5f2ed;
+      font-weight: 700;
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-mid);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Event diagram ── */
+
+    .event-diagram {
+      background: var(--code-bg);
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: 'Menlo', monospace;
+      font-size: 12px;
+      color: var(--code-text);
+      line-height: 2;
+      margin: 12px 0 20px;
+    }
+
+    .ed-emitter { color: #fab387; }
+    .ed-event   { color: #a6e3a1; }
+    .ed-listener { color: #89b4fa; }
+    .ed-arrow   { color: #6c7086; }
+
+    /* ── Architecture boxes ── */
+
+    .arch {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .arch-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'system-ui', sans-serif;
+    }
+
+    .arch-box-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .arch-box-files {
+      font-family: 'Menlo', monospace;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    .arch-box p {
+      font-size: 13px;
+      color: var(--text-mid);
+      margin-top: 6px;
+      margin-bottom: 0;
+    }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Sidebar TOC ── -->
+  <nav class="sidebar">
+    <div class="sidebar-title">TabSync — Codebase Guide</div>
+    <nav class="toc">
+      <div class="toc-section">
+        <div class="toc-section-label">Overview</div>
+        <a href="#architecture">Architecture</a>
+        <a href="#event-bus">Event Bus</a>
+      </div>
+      <div class="toc-section">
+        <div class="toc-section-label">HTML</div>
+        <a href="#html">index.html<span class="file">index.html</span></a>
+      </div>
+      <div class="toc-section">
+        <div class="toc-section-label">JavaScript</div>
+        <a href="#utils">Utilities<span class="file">js/utils.js</span></a>
+        <a href="#library">Data Layer<span class="file">js/library.js</span></a>
+        <a href="#store">Alpine Store<span class="file">js/store.js</span></a>
+        <a href="#editor">Editor Component<span class="file">js/editor.js</span></a>
+        <a href="#player">Player<span class="file">js/player.js</span></a>
+        <a href="#app">Entry Point<span class="file">js/app.js</span></a>
+      </div>
+      <div class="toc-section">
+        <div class="toc-section-label">Alpine.js</div>
+        <a href="#alpine-directives">Directives used</a>
+        <a href="#alpine-patterns">Patterns in this app</a>
+      </div>
+    </nav>
+  </nav>
+
+  <!-- ── Main content ── -->
+  <main class="content">
+
+    <h1>TabSync Codebase Guide</h1>
+    <p class="subtitle">A walkthrough of the HTML, JavaScript, and Alpine.js patterns that make up the app.</p>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="architecture">Architecture</h2>
+
+    <p>TabSync is a fully client-side app — no build step, no server, no bundler. The browser loads ES modules directly. The stack is vanilla JS, with <strong>Alpine.js</strong> handling reactive UI and <strong>localStorage</strong> for persistence.</p>
+
+    <div class="arch">
+      <div class="arch-box">
+        <div class="arch-box-title">Data Layer</div>
+        <div class="arch-box-files">library.js</div>
+        <p>Pure CRUD. Reads and writes a versioned JSON object to localStorage. No Alpine dependency.</p>
+      </div>
+      <div class="arch-box">
+        <div class="arch-box-title">Reactive UI</div>
+        <div class="arch-box-files">store.js · editor.js</div>
+        <p>Alpine store and component. Wraps library.js and drives the sidebar, track list, and modal.</p>
+      </div>
+      <div class="arch-box">
+        <div class="arch-box-title">Player</div>
+        <div class="arch-box-files">player.js</div>
+        <p>Vanilla DOM module. Bootstraps the YouTube IFrame API and manages playback state.</p>
+      </div>
+    </div>
+
+    <p>These three layers communicate exclusively through <strong>CustomEvents dispatched on <code>document</code></strong> (see <a href="#event-bus">Event Bus</a> below). No module holds a direct reference to another — they're decoupled.</p>
+
+    <p><strong>Module loading order</strong> in <code>app.js</code> matters:</p>
+    <ol>
+      <li>Register Alpine plugins (<code>Persist</code>, <code>Focus</code>)</li>
+      <li>Register store and editor component with Alpine</li>
+      <li>Initialise theme and help panel (plain DOM, no Alpine)</li>
+      <li><code>Alpine.start()</code> — Alpine processes the DOM</li>
+      <li><code>initPlayer()</code> — YouTube API bootstrap</li>
+    </ol>
+
+    <div class="callout note">
+      <div class="callout-title">Why does order matter?</div>
+      Plugins must be registered before <code>Alpine.start()</code>, and the store/components must be registered before <code>Alpine.start()</code> too — otherwise Alpine will process the DOM before it knows about <code>$store.lib</code> or <code>editorUI</code> and throw errors.
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="event-bus">Event Bus</h2>
+
+    <p>All cross-module communication uses CustomEvents fired on <code>document</code>. The helper in <code>utils.js</code> wraps this:</p>
+
+    <pre><code><span class="kw">export function</span> <span class="fn">dispatch</span>(name, detail = <span class="kw">null</span>) {
+  document.<span class="fn">dispatchEvent</span>(<span class="kw">new</span> <span class="fn">CustomEvent</span>(name, detail ? { detail } : undefined));
+}</code></pre>
+
+    <p>Events always fire on <code>document</code> — not from a specific DOM element — so any module can listen regardless of its position in the DOM tree.</p>
+
+    <div class="event-diagram">
+<span class="ed-emitter">store.js</span>       <span class="ed-arrow">──</span> <span class="ed-event">tabsync:editor-open</span>      <span class="ed-arrow">──▶</span> <span class="ed-listener">editor.js</span>
+<span class="ed-emitter">editor.js</span>      <span class="ed-arrow">──</span> <span class="ed-event">tabsync:library-changed</span>  <span class="ed-arrow">──▶</span> <span class="ed-listener">store.js</span> (reload)
+<span class="ed-emitter">store.js</span>       <span class="ed-arrow">──</span> <span class="ed-event">tabsync:library-changed</span>  <span class="ed-arrow">──▶</span> <span class="ed-listener">store.js</span> (reload)
+<span class="ed-emitter">store.js</span>       <span class="ed-arrow">──</span> <span class="ed-event">tabsync:track-selected</span>   <span class="ed-arrow">──▶</span> <span class="ed-listener">player.js</span>
+<span class="ed-emitter">editor.js</span>      <span class="ed-arrow">──</span> <span class="ed-event">tabsync:track-updated</span>    <span class="ed-arrow">──▶</span> <span class="ed-listener">player.js</span> (update cache)
+<span class="ed-emitter">player.js</span>      <span class="ed-arrow">──</span> <span class="ed-event">tabsync:playback-started</span> <span class="ed-arrow">──▶</span> <span class="ed-listener">store.js</span> (collapse sidebar)
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Event</th><th>Dispatched by</th><th>Handled by</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tabsync:editor-open</code></td>
+          <td>store.js (<code>openEditor</code>)</td>
+          <td>editor.js</td>
+          <td>Opens the add/edit modal. <code>detail</code> is <code>{ track }</code> to edit, or <code>null</code> to add.</td>
+        </tr>
+        <tr>
+          <td><code>tabsync:library-changed</code></td>
+          <td>editor.js, store.js (all mutations)</td>
+          <td>store.js</td>
+          <td>Tells the store to reload tracks and folders from localStorage.</td>
+        </tr>
+        <tr>
+          <td><code>tabsync:track-selected</code></td>
+          <td>store.js (<code>selectTrack</code>)</td>
+          <td>player.js</td>
+          <td>Loads a track into the player. <code>detail</code> is the full track object.</td>
+        </tr>
+        <tr>
+          <td><code>tabsync:track-updated</code></td>
+          <td>editor.js (on save edit)</td>
+          <td>player.js</td>
+          <td>Refreshes the player's cached track reference without reloading the video.</td>
+        </tr>
+        <tr>
+          <td><code>tabsync:playback-started</code></td>
+          <td>player.js (<code>play()</code>)</td>
+          <td>store.js</td>
+          <td>Auto-collapses the sidebar when playback begins.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="html">index.html — DOM Structure &amp; Alpine Wiring</h2>
+
+    <p>The HTML is an app shell — it defines the layout and wires up Alpine directives. There is no server-rendered content; everything displayed in the track list is generated by Alpine at runtime.</p>
+
+    <h3>The root scope: <code>&lt;body x-data&gt;</code></h3>
+
+    <pre><code><span class="tag">&lt;body</span> <span class="attr">x-data</span><span class="tag">&gt;</span></code></pre>
+
+    <p><code>x-data</code> with no value on the body creates an empty Alpine component scope that covers the entire page. This is necessary so that Alpine directives in the body (like <code>@click</code> and <code>:class</code>) have a component context to operate in. The real data lives in <code>$store.lib</code> (a global store), not in this component — but the component scope is required to access the store.</p>
+
+    <h3>Sidebar: reactive class binding</h3>
+
+    <pre><code><span class="tag">&lt;aside</span> <span class="attr">id</span>=<span class="str">"sidebar"</span> <span class="attr">:class</span>=<span class="str">"{ collapsed: $store.lib.sidebarCollapsed }"</span><span class="tag">&gt;</span></code></pre>
+
+    <p><code>:class</code> is shorthand for <code>x-bind:class</code>. It takes an object where keys are class names and values are boolean expressions. When <code>$store.lib.sidebarCollapsed</code> is <code>true</code>, the <code>collapsed</code> CSS class is added to the element. CSS handles the animation (<code>transition: transform 0.25s ease</code>).</p>
+
+    <h3>Folder list: <code>x-for</code></h3>
+
+    <pre><code><span class="tag">&lt;template</span> <span class="attr">x-for</span>=<span class="str">"folder in $store.lib.sortedFolders"</span> <span class="attr">:key</span>=<span class="str">"folder.id"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"folder-item"</span>
+    <span class="attr">x-data</span>=<span class="str">"{ renaming: false, draftName: '' }"</span>
+    <span class="attr">:class</span>=<span class="str">"{ active: $store.lib.view === folder.id }"</span>
+    <span class="attr">@click</span>=<span class="str">"if (!renaming) $store.lib.setView(folder.id)"</span><span class="tag">&gt;</span>
+    ...
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/template&gt;</span></code></pre>
+
+    <p><code>x-for</code> must be used on a <code>&lt;template&gt;</code> element — Alpine clones its content for each item. Note that each cloned <code>.folder-item</code> has its own <code>x-data</code> for local state (<code>renaming</code>, <code>draftName</code>). This is <em>component-local</em> state that doesn't need to live in the global store. Each folder item manages its own inline rename mode independently.</p>
+
+    <h3>Track list: <code>x-for</code> with hover-reveal actions</h3>
+
+    <pre><code><span class="tag">&lt;template</span> <span class="attr">x-for</span>=<span class="str">"track in $store.lib.filteredTracks"</span> <span class="attr">:key</span>=<span class="str">"track.id"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"track-item"</span>
+    <span class="attr">:class</span>=<span class="str">"{ active: $store.lib.selectedTrackId === track.id }"</span>
+    <span class="attr">@click</span>=<span class="str">"$store.lib.selectTrack(track)"</span><span class="tag">&gt;</span>
+
+    <span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"track-actions"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;button</span> <span class="attr">@click.stop</span>=<span class="str">"$store.lib.openEditor(track)"</span><span class="tag">&gt;</span>✎<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  <span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/template&gt;</span></code></pre>
+
+    <p>The edit button uses <code>@click.stop</code> — the <code>.stop</code> modifier calls <code>event.stopPropagation()</code> so the click doesn't bubble up to the parent <code>.track-item</code> and trigger <code>selectTrack</code> at the same time.</p>
+
+    <p>The <code>.track-actions</code> div is hidden by default in CSS (<code>display: none</code>) and revealed on hover (<code>.track-item:hover .track-actions { display: flex }</code>). This is a CSS concern, not an Alpine concern — no <code>x-show</code> needed when CSS hover state is sufficient.</p>
+
+    <h3>Search input: <code>x-model</code></h3>
+
+    <pre><code><span class="tag">&lt;input</span> <span class="attr">type</span>=<span class="str">"search"</span> <span class="attr">x-model</span>=<span class="str">"$store.lib.searchQuery"</span> <span class="tag">/&gt;</span></code></pre>
+
+    <p><code>x-model</code> creates a two-way binding between the input value and a piece of Alpine state. Typing in the input updates <code>$store.lib.searchQuery</code>, which automatically re-triggers the <code>filteredTracks</code> computed getter, which re-renders the <code>x-for</code> track list. This is the core Alpine reactive loop.</p>
+
+    <h3>Editor modal: <code>x-data</code>, <code>x-show</code>, <code>x-trap</code></h3>
+
+    <pre><code><span class="tag">&lt;div</span> <span class="attr">id</span>=<span class="str">"editor-overlay"</span>
+  <span class="attr">x-data</span>=<span class="str">"editorUI"</span>
+  <span class="attr">x-show</span>=<span class="str">"open"</span>
+  <span class="attr">style</span>=<span class="str">"display:none"</span>
+  <span class="attr">x-trap</span>=<span class="str">"open"</span>
+  <span class="attr">role</span>=<span class="str">"dialog"</span> <span class="attr">aria-modal</span>=<span class="str">"true"</span><span class="tag">&gt;</span></code></pre>
+
+    <p>Several things happening here:</p>
+    <ul>
+      <li><code>x-data="editorUI"</code> — mounts the named component registered via <code>Alpine.data('editorUI', ...)</code> in <code>editor.js</code>. The element becomes a self-contained component with its own state and methods.</li>
+      <li><code>x-show="open"</code> — toggles <code>display: none/block</code> based on the component's <code>open</code> property.</li>
+      <li><code>style="display:none"</code> — prevents a flash of the modal before Alpine initialises. Alpine sees this and respects it until it takes over.</li>
+      <li><code>x-trap="open"</code> — from the <code>@alpinejs/focus</code> plugin. While <code>open</code> is true, Tab key focus is trapped inside this element. On close, focus returns to wherever it was before the modal opened.</li>
+    </ul>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="utils">js/utils.js — Utilities</h2>
+    <div class="file-badge">js/utils.js</div>
+
+    <p>Four small, pure utility functions used throughout the app.</p>
+
+    <h3><code>uuid()</code></h3>
+    <pre><code><span class="kw">export function</span> <span class="fn">uuid</span>() {
+  <span class="kw">if</span> (typeof crypto !== <span class="str">'undefined'</span> && crypto.randomUUID) {
+    <span class="kw">return</span> crypto.<span class="fn">randomUUID</span>();
+  }
+  <span class="cmt">// Fallback for older environments</span>
+  <span class="kw">return</span> <span class="str">'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'</span>.<span class="fn">replace</span>(/[xy]/g, c => { ... });
+}</code></pre>
+    <p>Uses the native Web Crypto API when available. The fallback uses <code>Math.random()</code> which is less cryptographically strong but fine for generating track IDs.</p>
+
+    <h3><code>extractVideoId(url)</code></h3>
+    <pre><code><span class="kw">export function</span> <span class="fn">extractVideoId</span>(url) {
+  <span class="kw">const</span> m = url.<span class="fn">match</span>(
+    /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&amp;]v=)|youtu\.be\/)([^"&amp;?/\s]{11})/
+  );
+  <span class="kw">return</span> m ? m[<span class="num">1</span>] : <span class="kw">null</span>;
+}</code></pre>
+    <p>Parses any YouTube URL format (<code>youtube.com/watch?v=</code>, <code>youtu.be/</code>, embed URLs) and returns the 11-character video ID. Used in the editor to validate URLs and in <code>library.js</code> track objects which store the ID directly rather than the full URL.</p>
+
+    <h3><code>dispatch(name, detail)</code></h3>
+    <pre><code><span class="kw">export function</span> <span class="fn">dispatch</span>(name, detail = <span class="kw">null</span>) {
+  document.<span class="fn">dispatchEvent</span>(<span class="kw">new</span> <span class="fn">CustomEvent</span>(name, detail ? { detail } : undefined));
+}</code></pre>
+    <p>Fires a <code>CustomEvent</code> directly on <code>document</code>. The <code>detail</code> field is how data is passed with the event — e.g. a track object with <code>tabsync:track-selected</code>. Using <code>document</code> as the target (rather than a specific element) means any listener registered anywhere in the app will receive it.</p>
+
+    <h3><code>fetchOEmbed(videoUrl)</code></h3>
+    <pre><code><span class="kw">export async function</span> <span class="fn">fetchOEmbed</span>(videoUrl) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> endpoint = <span class="str">`https://www.youtube.com/oembed?url=<span class="val">${encodeURIComponent(videoUrl)}</span>&amp;format=json`</span>;
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(endpoint);
+    <span class="kw">if</span> (!res.ok) <span class="kw">return null</span>;
+    <span class="kw">const</span> data = <span class="kw">await</span> res.<span class="fn">json</span>();
+    <span class="kw">return</span> { title: data.title ?? <span class="str">''</span>, author: data.author_name ?? <span class="str">''</span> };
+  } <span class="kw">catch</span> {
+    <span class="kw">return null</span>;
+  }
+}</code></pre>
+    <p>YouTube's oEmbed endpoint is CORS-enabled and requires no API key, making it perfect for a client-side-only app. It accepts a video URL and returns metadata including the video title and channel name. Used by the editor to auto-populate the title and artist fields when a URL is pasted in.</p>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="library">js/library.js — Data Layer</h2>
+    <div class="file-badge">js/library.js</div>
+
+    <p>The data layer has no Alpine dependency — it's a pure read/write module over <code>localStorage</code>. This keeps the persistence logic isolated and testable independently.</p>
+
+    <h3>Storage schema</h3>
+    <p>Everything is stored under a single key (<code>tabsync-library</code>) as a versioned JSON envelope:</p>
+    <pre><code>{
+  <span class="str">"version"</span>: <span class="num">1</span>,
+  <span class="str">"tracks"</span>: [ { <span class="str">"id"</span>: <span class="str">"..."</span>, <span class="str">"title"</span>: <span class="str">"..."</span>, ... } ],
+  <span class="str">"folders"</span>: [ { <span class="str">"id"</span>: <span class="str">"..."</span>, <span class="str">"name"</span>: <span class="str">"..."</span>, ... } ]
+}</code></pre>
+    <p>The <code>version</code> field enables migrations. The <code>migrate(data)</code> function is a stub today but is the right place to add transformation logic when the schema changes.</p>
+
+    <h3>Load / save pattern</h3>
+    <pre><code><span class="kw">function</span> <span class="fn">load</span>() {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> raw = localStorage.<span class="fn">getItem</span>(STORAGE_KEY);
+    <span class="kw">if</span> (!raw) <span class="kw">return</span> <span class="fn">empty</span>();
+    <span class="kw">const</span> parsed = JSON.<span class="fn">parse</span>(raw);
+    <span class="kw">if</span> (!parsed || typeof parsed !== <span class="str">'object'</span>) <span class="kw">return</span> <span class="fn">empty</span>();
+    <span class="kw">return</span> <span class="fn">migrate</span>(parsed);
+  } <span class="kw">catch</span> {
+    <span class="kw">return</span> <span class="fn">empty</span>();  <span class="cmt">// corrupted storage → start fresh</span>
+  }
+}</code></pre>
+    <p>Every mutation follows the same pattern: <code>load()</code> → modify → <code>save()</code>. The data is never kept in memory between calls — each function reads fresh from localStorage. This is intentionally simple; there's no in-memory cache to get out of sync.</p>
+
+    <h3>Track CRUD</h3>
+    <pre><code><span class="kw">export function</span> <span class="fn">createTrack</span>(fields) {
+  <span class="kw">const</span> data = <span class="fn">load</span>();
+  <span class="kw">const</span> now = <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">toISOString</span>();
+  <span class="kw">const</span> track = { ...fields, id: <span class="fn">uuid</span>(), createdAt: now, updatedAt: now };
+  data.tracks.<span class="fn">push</span>(track);
+  <span class="fn">save</span>(data);
+  <span class="kw">return</span> track;
+}
+
+<span class="kw">export function</span> <span class="fn">updateTrack</span>(id, fields) {
+  <span class="kw">const</span> data = <span class="fn">load</span>();
+  <span class="kw">const</span> idx = data.tracks.<span class="fn">findIndex</span>(t => t.id === id);
+  data.tracks[idx] = { ...data.tracks[idx], ...fields, id, updatedAt: <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">toISOString</span>() };
+  <span class="fn">save</span>(data);
+  <span class="kw">return</span> data.tracks[idx];  <span class="cmt">// returns the updated track</span>
+}</code></pre>
+    <p>Note that <code>updateTrack</code> returns the full updated track object. The editor uses this return value to dispatch <code>tabsync:track-updated</code> with the fresh data, so the player can update its cached track reference without a round-trip back to localStorage.</p>
+
+    <h3>Folder deletion cascades to tracks</h3>
+    <pre><code><span class="kw">export function</span> <span class="fn">deleteFolder</span>(id) {
+  <span class="kw">const</span> data = <span class="fn">load</span>();
+  data.folders = data.folders.<span class="fn">filter</span>(f => f.id !== id);
+  data.tracks = data.tracks.<span class="fn">map</span>(t =>
+    t.folderId === id ? { ...t, folderId: <span class="kw">null</span> } : t
+  );
+  <span class="fn">save</span>(data);
+}</code></pre>
+    <p>Deleting a folder doesn't delete its tracks — they're reassigned to "All tracks" by setting <code>folderId: null</code>.</p>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="store">js/store.js — Alpine Reactive Store</h2>
+    <div class="file-badge">js/store.js</div>
+
+    <p>The store is the reactive UI layer wrapping <code>library.js</code>. It's a global Alpine store, meaning any Alpine component anywhere in the DOM can read and write it via <code>$store.lib</code>.</p>
+
+    <h3>Registration pattern</h3>
+    <pre><code><span class="kw">export function</span> <span class="fn">initStore</span>(Alpine) {
+  Alpine.<span class="fn">store</span>(<span class="str">'lib'</span>, {
+    tracks: [],
+    folders: [],
+    <span class="cmt">// ...</span>
+  });
+}</code></pre>
+    <p><code>initStore</code> receives the Alpine instance as an argument rather than importing it, which keeps the module testable and avoids a circular dependency. It's called from <code>app.js</code> before <code>Alpine.start()</code>.</p>
+
+    <h3>Persisted state with <code>Alpine.$persist</code></h3>
+    <pre><code>view:             Alpine.<span class="fn">$persist</span>(<span class="str">'all'</span>).<span class="fn">as</span>(<span class="str">'tabsync-view'</span>),
+sortBy:           Alpine.<span class="fn">$persist</span>(<span class="str">'createdAt-desc'</span>).<span class="fn">as</span>(<span class="str">'tabsync-sort'</span>),
+sidebarCollapsed: Alpine.<span class="fn">$persist</span>(<span class="num">false</span>).<span class="fn">as</span>(<span class="str">'tabsync-sidebar-collapsed'</span>),</code></pre>
+    <p>The <code>@alpinejs/persist</code> plugin makes any property automatically sync to/from localStorage. <code>$persist(defaultValue)</code> sets the initial value if none is stored yet; <code>.as('key')</code> sets the localStorage key name. Any time Alpine updates one of these properties, the new value is written to localStorage. On the next page load, the stored value is read back.</p>
+
+    <h3>Computed getters</h3>
+    <pre><code><span class="fn">get</span> <span class="fn">filteredTracks</span>() {
+  <span class="kw">let</span> t = this.tracks;
+
+  <span class="kw">if</span> (this.view === <span class="str">'favourites'</span>) {
+    t = t.<span class="fn">filter</span>(x => x.favourite);
+  } <span class="kw">else if</span> (this.view !== <span class="str">'all'</span>) {
+    t = t.<span class="fn">filter</span>(x => x.folderId === this.view); <span class="cmt">// folder view</span>
+  }
+
+  <span class="kw">const</span> q = this.searchQuery.<span class="fn">trim</span>().<span class="fn">toLowerCase</span>();
+  <span class="kw">if</span> (q) t = t.<span class="fn">filter</span>(x => x.title.<span class="fn">toLowerCase</span>().<span class="fn">includes</span>(q) || ...);
+
+  t = <span class="fn">sortTracks</span>(t, this.sortBy);
+
+  <span class="kw">if</span> (this.difficultyFilter !== <span class="kw">null</span>) {
+    t = t.<span class="fn">filter</span>(x => x.difficulty !== <span class="kw">null</span> && x.difficulty <= this.difficultyFilter);
+  }
+
+  <span class="kw">return</span> t;
+},</code></pre>
+    <p>JavaScript getters on an Alpine store object act as computed properties. Alpine tracks which reactive properties the getter accesses (<code>tracks</code>, <code>view</code>, <code>searchQuery</code>, <code>sortBy</code>, <code>difficultyFilter</code>) and re-runs the getter automatically when any of them change. The result is that the track list in the HTML (<code>x-for="track in $store.lib.filteredTracks"</code>) always reflects the current filter/sort state with no manual update calls.</p>
+
+    <h3>Reload pattern</h3>
+    <pre><code><span class="fn">init</span>() {
+  this.<span class="fn">reload</span>();
+  document.<span class="fn">addEventListener</span>(<span class="str">'tabsync:library-changed'</span>, () => this.<span class="fn">reload</span>());
+  document.<span class="fn">addEventListener</span>(<span class="str">'tabsync:playback-started'</span>, () => { this.sidebarCollapsed = <span class="kw">true</span>; });
+},
+
+<span class="fn">reload</span>() {
+  <span class="kw">const</span> lib = <span class="fn">getLibrary</span>();
+  this.tracks = lib.tracks;
+  this.folders = lib.folders;
+},</code></pre>
+    <p>The store doesn't mutate <code>library.js</code> state itself — it calls <code>getLibrary()</code> to get a fresh copy from localStorage and replaces its arrays. Because Alpine stores are reactive, replacing <code>this.tracks</code> with a new array triggers a re-render of anything that reads <code>$store.lib.tracks</code>.</p>
+
+    <p>All store mutations (and the editor's <code>submit()</code>) dispatch <code>tabsync:library-changed</code> when done. The store's own listener handles the reload. This means the flow for any mutation is always: mutate localStorage → fire event → store reloads → Alpine re-renders.</p>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="editor">js/editor.js — Editor Alpine Component</h2>
+    <div class="file-badge">js/editor.js</div>
+
+    <p>The editor is an Alpine <em>component</em> (distinct from a <em>store</em>). While the store is global singleton state, a component is a reusable block of state + behaviour tied to a specific DOM element.</p>
+
+    <h3>Registration</h3>
+    <pre><code><span class="kw">export function</span> <span class="fn">initEditorComponent</span>(Alpine) {
+  Alpine.<span class="fn">data</span>(<span class="str">'editorUI'</span>, () => ({
+    open: <span class="kw">false</span>,
+    editingTrack: <span class="kw">null</span>,
+    title: <span class="str">''</span>,
+    <span class="cmt">// ...</span>
+  }));
+}</code></pre>
+    <p><code>Alpine.data('name', factory)</code> registers a named component factory. The factory is an arrow function returning an object — the object's properties become reactive state, and its functions become methods. In the HTML, <code>x-data="editorUI"</code> instantiates this component on that element.</p>
+
+    <h3>Component lifecycle: <code>init()</code></h3>
+    <pre><code><span class="fn">init</span>() {
+  document.<span class="fn">addEventListener</span>(<span class="str">'tabsync:editor-open'</span>, e => {
+    this.<span class="fn">openFor</span>(e.detail?.track ?? <span class="kw">null</span>);
+  });
+  document.<span class="fn">addEventListener</span>(<span class="str">'keydown'</span>, e => {
+    <span class="kw">if</span> (e.key === <span class="str">'Escape'</span> && this.open) this.<span class="fn">tryClose</span>();
+  });
+},</code></pre>
+    <p>Alpine calls <code>init()</code> automatically when it mounts the component. This is where you set up event listeners and anything that needs to happen once on creation. Note that <code>document</code> listeners are registered here rather than inline in the HTML — the modal needs to respond to events from outside its DOM subtree.</p>
+
+    <h3>Two modes: add vs. edit</h3>
+    <pre><code><span class="fn">openFor</span>(track) {
+  this.editingTrack = track ?? <span class="kw">null</span>;   <span class="cmt">// null → Add, object → Edit</span>
+  this.title  = track?.title  ?? <span class="str">''</span>;
+  this.tabUrl = track ? <span class="str">`https://www.youtube.com/watch?v=<span class="val">${track.tabVideoId}</span>`</span> : <span class="str">''</span>;
+  <span class="cmt">// ... populate all fields</span>
+  this.open = <span class="kw">true</span>;
+  this.openSnapshot = this.<span class="fn">_snapshot</span>();  <span class="cmt">// record initial state for dirty-check</span>
+},</code></pre>
+    <p>A single method handles both modes. If <code>track</code> is null, it clears all fields (add mode); if it's a track object, it pre-populates them (edit mode). The heading and submit button label are computed from <code>editingTrack</code>:</p>
+    <pre><code><span class="kw">get</span> <span class="fn">heading</span>()     { <span class="kw">return</span> this.editingTrack ? <span class="str">'Edit Track'</span> : <span class="str">'Add Track'</span>; },
+<span class="kw">get</span> <span class="fn">submitLabel</span>() { <span class="kw">return</span> this.editingTrack ? <span class="str">'Save Changes'</span> : <span class="str">'Add Track'</span>; },</code></pre>
+
+    <h3>Dirty-state tracking</h3>
+    <pre><code><span class="fn">_snapshot</span>() {
+  <span class="kw">return</span> JSON.<span class="fn">stringify</span>({
+    title: this.title, artist: this.artist,
+    tabUrl: this.tabUrl, tabStart: <span class="fn">parseFloat</span>(this.tabStart) || <span class="num">0</span>,
+    <span class="cmt">// ...</span>
+  });
+},
+
+<span class="kw">get</span> <span class="fn">isDirty</span>() {
+  <span class="kw">return</span> this.openSnapshot !== <span class="kw">null</span> && this.<span class="fn">_snapshot</span>() !== this.openSnapshot;
+},</code></pre>
+    <p>When the modal opens, the current field values are serialised to a JSON string and stored as <code>openSnapshot</code>. The <code>isDirty</code> getter compares the current snapshot to the opening snapshot. If they differ, the user has unsaved changes and <code>tryClose()</code> will prompt for confirmation before discarding.</p>
+
+    <h3>DOM focus with <code>$refs</code> and <code>$nextTick</code></h3>
+    <pre><code>this.<span class="fn">$nextTick</span>(() => {
+  <span class="kw">const</span> refs = [this.$refs.titleInput, this.$refs.artistInput, this.$refs.tabUrlInput];
+  (refs.<span class="fn">find</span>(el => el && !el.value) ?? refs[<span class="num">0</span>])?.<span class="fn">focus</span>();
+});</code></pre>
+    <p><code>$refs</code> gives you direct access to DOM elements that have an <code>x-ref="name"</code> attribute. <code>$nextTick</code> defers the callback until after Alpine has processed its DOM updates — here, it waits until <code>x-show="open"</code> has made the modal visible before trying to focus an input (you can't focus a hidden element). The logic finds the first empty field, or defaults to the title input.</p>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="player">js/player.js — YouTube Player</h2>
+    <div class="file-badge">js/player.js</div>
+
+    <p>The player is a vanilla DOM module — no Alpine. It manages the YouTube IFrame API and responds to events from the rest of the app.</p>
+
+    <h3>YouTube IFrame API bootstrap</h3>
+    <pre><code><span class="kw">function</span> <span class="fn">bootstrapYouTubeAPI</span>() {
+  window.onYouTubeIframeAPIReady = <span class="fn">onYouTubeIframeAPIReady</span>;
+  <span class="kw">const</span> tag = document.<span class="fn">createElement</span>(<span class="str">'script'</span>);
+  tag.src = <span class="str">'https://www.youtube.com/iframe_api'</span>;
+  document.head.<span class="fn">appendChild</span>(tag);
+}</code></pre>
+    <p>The YouTube IFrame API is loaded by injecting a <code>&lt;script&gt;</code> tag at runtime. YouTube's script calls <code>window.onYouTubeIframeAPIReady</code> when it's ready — so setting that global before appending the tag ensures the callback is registered in time.</p>
+
+    <h3>Pending track guard</h3>
+    <pre><code>document.<span class="fn">addEventListener</span>(<span class="str">'tabsync:track-selected'</span>, e => {
+  <span class="kw">if</span> (!apiReady) {
+    pendingTrack = e.detail;   <span class="cmt">// API not ready yet — queue it</span>
+    <span class="fn">setStatus</span>(<span class="str">'Loading API…'</span>);
+    <span class="kw">return</span>;
+  }
+  <span class="fn">loadTrack</span>(e.detail);
+});</code></pre>
+    <p>If a user clicks a track before the YouTube script has loaded (slow network), the track is held in <code>pendingTrack</code>. When <code>onYouTubeIframeAPIReady</code> fires, it checks for a pending track and loads it immediately.</p>
+
+    <h3>Stale-callback guard: <code>loadId</code></h3>
+    <pre><code><span class="kw">function</span> <span class="fn">loadTrack</span>(track) {
+  <span class="kw">const</span> myLoadId = ++loadId;  <span class="cmt">// increment global counter, capture local copy</span>
+  <span class="cmt">// ...</span>
+}
+
+<span class="kw">function</span> <span class="fn">makeOnReady</span>(capturedLoadId) {
+  <span class="kw">return function</span> <span class="fn">onPlayerReady</span>() {
+    <span class="kw">if</span> (capturedLoadId !== loadId) <span class="kw">return</span>;  <span class="cmt">// a newer track was selected — ignore</span>
+    <span class="cmt">// ... seek and enable controls</span>
+  };
+}</code></pre>
+    <p>Each call to <code>loadTrack</code> gets a unique ID. When the YouTube player's async <code>onReady</code> callback fires, it checks whether its captured ID still matches the current <code>loadId</code>. If the user switched tracks while the previous video was loading, the old callback sees a mismatched ID and bails out — preventing stale players from interfering with the new track.</p>
+
+    <h3>Closure-based event handlers</h3>
+    <pre><code><span class="kw">function</span> <span class="fn">makeOnStateChange</span>(capturedLoadId) {
+  <span class="kw">return function</span> <span class="fn">onStateChange</span>(event) {
+    <span class="kw">if</span> (capturedLoadId !== loadId) <span class="kw">return</span>;
+    <span class="kw">if</span> (event.data === YT.PlayerState.ENDED) {
+      <span class="fn">pause</span>();
+      <span class="fn">setStatus</span>(<span class="str">'Ended'</span>);
+    }
+  };
+}</code></pre>
+    <p>The <code>make*</code> functions are factory functions that return event handler callbacks. This pattern (returning a function from a function) allows each handler to close over its own <code>capturedLoadId</code> independently.</p>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="app">js/app.js — Entry Point</h2>
+    <div class="file-badge">js/app.js</div>
+
+    <p>The entry point wires everything together. The order of operations is critical:</p>
+
+    <pre><code><span class="kw">import</span> Alpine  <span class="kw">from</span> <span class="str">'https://cdn.jsdelivr.net/npm/alpinejs@3/dist/module.esm.js'</span>;
+<span class="kw">import</span> Persist <span class="kw">from</span> <span class="str">'https://cdn.jsdelivr.net/npm/@alpinejs/persist@3/dist/module.esm.js'</span>;
+<span class="kw">import</span> Focus   <span class="kw">from</span> <span class="str">'https://cdn.jsdelivr.net/npm/@alpinejs/focus@3/dist/module.esm.js'</span>;
+
+<span class="cmt">// 1. Register plugins — must come before store (which uses $persist)</span>
+Alpine.<span class="fn">plugin</span>(Persist);
+Alpine.<span class="fn">plugin</span>(Focus);
+
+<span class="cmt">// 2. Register store and component — must come before Alpine.start()</span>
+<span class="fn">initStore</span>(Alpine);
+<span class="fn">initEditorComponent</span>(Alpine);
+
+<span class="cmt">// 3. Non-Alpine initialisation</span>
+<span class="fn">initTheme</span>();
+<span class="fn">initHelp</span>();
+
+<span class="cmt">// 4. Start Alpine — processes the DOM, mounts components, runs init()</span>
+window.Alpine = Alpine;
+Alpine.<span class="fn">start</span>();
+
+<span class="cmt">// 5. Bootstrap YouTube API (after Alpine so DOM is ready)</span>
+<span class="fn">initPlayer</span>();</code></pre>
+
+    <h3>Why is theme management outside Alpine?</h3>
+    <p>The theme needs to be applied <em>before</em> the page is visible to avoid a flash of the wrong theme. Alpine initialises after the DOM is parsed, which would be too late. The theme code runs synchronously from the module's top level, reads <code>localStorage</code> directly, and sets <code>data-theme</code> on <code>&lt;html&gt;</code> immediately.</p>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="alpine-directives">Alpine.js — Directives Used in This App</h2>
+
+    <p>A quick reference for the Alpine directives you'll see in <code>index.html</code>:</p>
+
+    <table>
+      <thead>
+        <tr><th>Directive</th><th>What it does</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>x-data</code></td>
+          <td>Creates a component scope. Can be an inline object <code>x-data="{ open: false }"</code>, a named component <code>x-data="editorUI"</code>, or empty <code>x-data</code> for a store-only scope.</td>
+          <td><code>&lt;body x-data&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>x-model</code></td>
+          <td>Two-way binding between an input and a reactive property. Reading the input updates the property; changing the property updates the input.</td>
+          <td><code>x-model="$store.lib.searchQuery"</code></td>
+        </tr>
+        <tr>
+          <td><code>x-show</code></td>
+          <td>Toggles <code>display: none</code> based on an expression. The element stays in the DOM (vs. <code>x-if</code> which removes it).</td>
+          <td><code>x-show="open"</code></td>
+        </tr>
+        <tr>
+          <td><code>x-if</code></td>
+          <td>Conditionally adds or removes an element from the DOM. Used inside <code>&lt;template&gt;</code>. Use <code>x-show</code> for frequent toggling; <code>x-if</code> for infrequent (e.g. rename input that only exists while renaming).</td>
+          <td><code>&lt;template x-if="renaming"&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>x-for</code></td>
+          <td>Repeats a <code>&lt;template&gt;</code>'s content for each item in an array. Always provide <code>:key</code> with a unique identifier for efficient DOM diffing.</td>
+          <td><code>x-for="track in $store.lib.filteredTracks" :key="track.id"</code></td>
+        </tr>
+        <tr>
+          <td><code>x-text</code></td>
+          <td>Sets the text content of an element to an expression's value.</td>
+          <td><code>x-text="track.title"</code></td>
+        </tr>
+        <tr>
+          <td><code>:attr</code> / <code>x-bind:attr</code></td>
+          <td>Dynamically sets an HTML attribute. <code>:class</code> is especially useful — accepts an object of <code>{ className: booleanExpr }</code>.</td>
+          <td><code>:class="{ active: $store.lib.view === 'all' }"</code></td>
+        </tr>
+        <tr>
+          <td><code>@event</code> / <code>x-on:event</code></td>
+          <td>Attaches an event listener. Modifiers: <code>.stop</code> (stopPropagation), <code>.prevent</code> (preventDefault), <code>.once</code>, key modifiers like <code>@keydown.enter</code>.</td>
+          <td><code>@click.stop="$store.lib.removeTrack(track.id, track.title)"</code></td>
+        </tr>
+        <tr>
+          <td><code>x-ref</code></td>
+          <td>Gives a DOM element a name accessible via <code>this.$refs.name</code> inside the component.</td>
+          <td><code>x-ref="titleInput"</code> → <code>this.$refs.titleInput.focus()</code></td>
+        </tr>
+        <tr>
+          <td><code>x-trap</code></td>
+          <td>From <code>@alpinejs/focus</code>. Traps keyboard focus inside the element while the expression is truthy. Restores focus on close.</td>
+          <td><code>x-trap="open"</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ════════════════════════════════════════════════════════ -->
+    <h2 id="alpine-patterns">Alpine.js — Magic Properties Used in This App</h2>
+
+    <p>Magic properties are available inside any Alpine expression (inline HTML or component methods):</p>
+
+    <table>
+      <thead>
+        <tr><th>Magic</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>$store.lib</code></td>
+          <td>Access the global store registered as <code>Alpine.store('lib', ...)</code>. Readable and writable from any Alpine context anywhere in the DOM.</td>
+        </tr>
+        <tr>
+          <td><code>$refs.name</code></td>
+          <td>Direct reference to a DOM element with <code>x-ref="name"</code> on the same component. Only available inside component methods, not inline expressions.</td>
+        </tr>
+        <tr>
+          <td><code>$nextTick(fn)</code></td>
+          <td>Defers <code>fn</code> until after Alpine has finished processing its current batch of DOM updates. Essential when you need to interact with DOM elements that Alpine is about to show or create.</td>
+        </tr>
+        <tr>
+          <td><code>$persist(default)</code></td>
+          <td>From <code>@alpinejs/persist</code>. Wraps a value so it automatically syncs to/from localStorage. Use <code>.as('key')</code> to name the storage key. Used in the store for <code>view</code>, <code>sortBy</code>, <code>sidebarCollapsed</code>.</td>
+        </tr>
+        <tr>
+          <td><code>$el</code></td>
+          <td>The current DOM element. Used in the editor backdrop click handler: <code>if ($event.target === $el)</code> — checks whether the click was on the backdrop itself (not a child element).</td>
+        </tr>
+        <tr>
+          <td><code>$event</code></td>
+          <td>The native DOM event object, available inside <code>@event</code> handlers. Used to read <code>$event.target</code> or <code>$event.target.files</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <div class="callout-title">$dispatch vs dispatch()</div>
+      Alpine provides a <code>$dispatch(name, detail)</code> magic that fires a CustomEvent from the <em>current element</em> and bubbles it up the DOM. The app uses <code>dispatch()</code> from <code>utils.js</code> instead, which fires directly on <code>document</code>. This matters because Alpine's <code>$dispatch</code> relies on DOM bubbling — if an element were ever in a shadow DOM or portal, it could silently fail to reach <code>document</code>-level listeners.
+    </div>
+
+    <hr>
+    <p style="color: var(--text-muted); font-family: system-ui; font-size: 13px; text-align: center;">
+      Generated for TabSync · March 2026
+    </p>
+
+  </main>
+</div>
+</body>
+</html>
