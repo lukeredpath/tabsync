@@ -55,6 +55,20 @@ Playwright is used for browser-based testing. Tests run against both Chromium an
 - The `playwright-skill` Claude plugin is enabled for exploratory browser automation during development.
 - After every `git push`, a background hook monitors the corresponding GitHub Actions run and wakes Claude if it fails — Claude will then ask whether to investigate and fix the error. This is configured in `.claude/settings.local.json` (not committed).
 
+### TDD workflow for new features
+
+New features should be accompanied by tests, following this order:
+
+1. Write the test based on the desired behaviour (against the intended HTML structure/API, even if not yet implemented).
+2. If the HTML/template structure isn't settled, sketch it out first and update the test to match.
+3. Run the test and confirm it fails (red).
+4. Implement the feature.
+5. Run the test and confirm it passes (green).
+
+## Keeping SPEC.md up to date
+
+`SPEC.md` is the source of truth for what the app does. Whenever architecture changes are made or the localStorage schema version is bumped, review `SPEC.md` and update it accordingly — data model table, storage layout version, architecture notes, and feature descriptions.
+
 ## Sensitive data policy
 
 **This project must never contain sensitive data.** It is intended to be open source.
