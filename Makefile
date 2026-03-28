@@ -2,7 +2,7 @@ PORT     ?= 8080
 HOSTNAME := $(shell hostname -s).local
 PID_FILE := .server.pid
 
-.PHONY: start stop serve test
+.PHONY: start stop serve test ci-watch
 
 start:
 	@if [ -f $(PID_FILE) ] && kill -0 $$(cat $(PID_FILE)) 2>/dev/null; then \
@@ -34,3 +34,8 @@ serve:
 
 test:
 	npx playwright test && npx playwright show-report
+
+# Monitor the GitHub Actions run for the current HEAD (or a specific SHA).
+# Usage: make ci-watch [SHA=<commit>]
+ci-watch:
+	@./scripts/ci-watch.sh $(SHA)
