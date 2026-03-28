@@ -146,7 +146,7 @@ export function initEditorComponent(Alpine) {
       }
 
       if (titleEmpty  && data.title)  this.title  = data.title;
-      if (artistEmpty && data.author) this.artist = data.author;
+      if (artistEmpty && data.artist) this.artist = data.artist;
 
       this.tabOembedMsg = 'Title filled from YouTube'; this.tabOembedType = 'success';
       setTimeout(() => {
