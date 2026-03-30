@@ -21,11 +21,14 @@ const YT_STUB = `
 `;
 
 export const test = base.extend({
-  page: async ({ page }, use) => {
-    await page.route('https://www.youtube.com/iframe_api', route =>
+  context: async ({ context }, use) => {
+    // Hard-block all outbound YouTube requests (registered first = lower priority).
+    await context.route('https://*.youtube.com/**', route => route.abort());
+    // Serve the stub in place of the real IFrame API script (registered last = wins).
+    await context.route('https://www.youtube.com/iframe_api', route =>
       route.fulfill({ contentType: 'text/javascript', body: YT_STUB })
     );
-    await use(page);
+    await use(context);
   },
 });
 
