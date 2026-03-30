@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './base';
 
 test.beforeEach(async ({ page }) => {
   // Clear localStorage before each test to ensure isolation
