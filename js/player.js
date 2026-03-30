@@ -72,7 +72,7 @@ function startIntroWatch() {
       tabPlayer.setPlaybackRate(playbackRate);
       setStatus('Playing');
     }
-  }, 100);
+  }, 500);
 }
 
 function clearIntroWatch() {
