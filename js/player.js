@@ -35,6 +35,9 @@ let countInTimer   = null;
 
 let seekTimer = null;
 
+let introActive = false;  // true while audio plays intro before tab starts (syncOffset > 0)
+let introTimer  = null;   // setInterval handle for intro-phase polling
+
 const COUNT_IN_KEY = 'tabsync-count-in';
 
 let drag = { active: false, startX: 0, startY: 0, origX: 0, origY: 0 };
@@ -52,6 +55,28 @@ function setStatus(msg) {
 
 function resolveCountIn(track) {
   return (track?.countIn != null) ? track.countIn : countInEnabled;
+}
+
+// ── Intro-phase helpers ──
+
+function startIntroWatch() {
+  clearIntroWatch();
+  introTimer = setInterval(() => {
+    if (!audioPlayer || !isPlaying || !introActive) { clearIntroWatch(); return; }
+    const offset = currentTrack?.syncOffset ?? 0;
+    if (audioPlayer.getCurrentTime() >= offset) {
+      clearIntroWatch();
+      introActive = false;
+      tabPlayer.seekTo(0, true);
+      tabPlayer.playVideo();
+      tabPlayer.setPlaybackRate(playbackRate);
+      setStatus('Playing');
+    }
+  }, 100);
+}
+
+function clearIntroWatch() {
+  if (introTimer) { clearInterval(introTimer); introTimer = null; }
 }
 
 function setSpeed(rate) {
@@ -103,6 +128,8 @@ function loadTrack(track) {
   const myLoadId = ++loadId;
 
   isPlaying = false;
+  introActive = false;
+  clearIntroWatch();
   tabPlayer = null;
   audioPlayer = null;
 
@@ -133,6 +160,10 @@ function loadTrack(track) {
     document.getElementById('audio-player-wrapper').innerHTML = '<div id="audio-player"></div>';
   }
 
+  const syncOffset = track.syncOffset ?? 0;
+  // Tab seeks to |syncOffset| when audio leads (syncOffset < 0); otherwise starts at 0.
+  const tabStartPos = Math.max(0, Math.floor(-syncOffset));
+
   // Build tab player
   tabPlayer = new YT.Player('tab-player', {
     videoId: track.tabVideoId,
@@ -142,7 +173,7 @@ function loadTrack(track) {
       mute: hasAudio ? 1 : 0,
       rel: 0,
       modestbranding: 1,
-      start: Math.floor(track.tabStart),
+      start: tabStartPos,
     },
     events: {
       onReady:       makeOnReady(myLoadId),
@@ -161,7 +192,7 @@ function loadTrack(track) {
         mute: 0,
         rel: 0,
         modestbranding: 1,
-        start: Math.floor(track.audioStart),
+        start: 0,
       },
       events: {
         onReady: makeOnReady(myLoadId),
@@ -178,15 +209,17 @@ function makeOnReady(capturedLoadId) {
     playersReady++;
     if (playersReady < playersNeeded) return; // wait for the other player
 
-    // Both (or the only) player is ready — seek to fractional start offsets
-    tabPlayer.seekTo(currentTrack.tabStart, true);
+    // Both (or the only) player is ready — seek to start positions
+    const offset = currentTrack.syncOffset ?? 0;
+    tabPlayer.seekTo(Math.max(0, -offset), true);
     tabPlayer.pauseVideo();
     tabPlayer.setPlaybackRate(playbackRate);
 
     if (audioPlayer) {
-      audioPlayer.seekTo(currentTrack.audioStart, true);
+      audioPlayer.seekTo(0, true);
       audioPlayer.pauseVideo();
       audioPlayer.setPlaybackRate(playbackRate);
+      introActive = offset > 0;
     }
 
     atStart = true;
@@ -199,9 +232,9 @@ function makeOnReady(capturedLoadId) {
 const RESYNC_THRESHOLD = 1.0; // seconds of drift before resyncing audio
 
 function resyncAudio() {
-  if (!audioPlayer || !currentTrack) return;
+  if (!audioPlayer || !currentTrack || introActive) return;
   const tabTime = tabPlayer.getCurrentTime();
-  const audioTarget = tabTime - currentTrack.tabStart + currentTrack.audioStart;
+  const audioTarget = tabTime + (currentTrack.syncOffset ?? 0);
   if (Math.abs(audioPlayer.getCurrentTime() - audioTarget) < RESYNC_THRESHOLD) return;
   audioPlayer.seekTo(audioTarget, true);
 }
@@ -213,10 +246,10 @@ function makeOnStateChange(capturedLoadId) {
       pause();
       setStatus('Ended');
     }
-    if (event.data === YT.PlayerState.PLAYING && audioPlayer) {
+    if (event.data === YT.PlayerState.PLAYING && audioPlayer && !introActive) {
       resyncAudio();
     }
-    if (event.data === YT.PlayerState.PAUSED && audioPlayer) {
+    if (event.data === YT.PlayerState.PAUSED && audioPlayer && !introActive) {
       resyncAudio();
       audioPlayer.pauseVideo();
     }
@@ -236,12 +269,18 @@ function makeOnError(capturedLoadId, label) {
 function play() {
   if (!tabPlayer) return;
   atStart = false;
-  tabPlayer.playVideo();
-  if (audioPlayer) audioPlayer.playVideo();
+  if (introActive) {
+    audioPlayer.playVideo();
+    startIntroWatch();
+    setStatus('Intro…');
+  } else {
+    tabPlayer.playVideo();
+    if (audioPlayer) audioPlayer.playVideo();
+    setStatus('Playing');
+  }
   isPlaying = true;
   elPlayPause.textContent = '⏸';
   elPlayPause.setAttribute('aria-label', 'Pause');
-  setStatus('Playing');
   document.dispatchEvent(new CustomEvent('tabsync:playback-started'));
 }
 
@@ -249,6 +288,7 @@ function pause() {
   if (!tabPlayer) return;
   tabPlayer.pauseVideo();
   if (audioPlayer) audioPlayer.pauseVideo();
+  clearIntroWatch();
   isPlaying = false;
   elPlayPause.textContent = '▶';
   elPlayPause.setAttribute('aria-label', 'Play');
@@ -320,8 +360,12 @@ function restart() {
   const wasPlaying = isPlaying;
   pause();
   atStart = true;
-  tabPlayer.seekTo(currentTrack.tabStart, true);
-  if (audioPlayer) audioPlayer.seekTo(currentTrack.audioStart, true);
+  const offset = currentTrack.syncOffset ?? 0;
+  tabPlayer.seekTo(Math.max(0, -offset), true);
+  if (audioPlayer) {
+    audioPlayer.seekTo(0, true);
+    introActive = offset > 0;
+  }
   if (wasPlaying) togglePlay();
 }
 
@@ -332,10 +376,22 @@ function seek(delta) {
   if (wasPlaying) {
     tabPlayer.pauseVideo();
     if (audioPlayer) audioPlayer.pauseVideo();
+    clearIntroWatch();
   }
 
-  tabPlayer.seekTo(tabPlayer.getCurrentTime() + delta, true);
-  if (audioPlayer) audioPlayer.seekTo(audioPlayer.getCurrentTime() + delta, true);
+  if (introActive && audioPlayer) {
+    // During intro: move audio; exit intro if we've seeked past the sync point.
+    const newAudioTime = (audioPlayer.getCurrentTime() || 0) + delta;
+    audioPlayer.seekTo(Math.max(0, newAudioTime), true);
+    const offset = currentTrack?.syncOffset ?? 0;
+    if (newAudioTime >= offset) {
+      introActive = false;
+      tabPlayer.seekTo(Math.max(0, newAudioTime - offset), true);
+    }
+  } else {
+    tabPlayer.seekTo(tabPlayer.getCurrentTime() + delta, true);
+    if (audioPlayer) audioPlayer.seekTo(audioPlayer.getCurrentTime() + delta, true);
+  }
 
   if (wasPlaying) {
     // Brief delay lets the IFrame API's internal queue settle before resuming.
@@ -344,11 +400,17 @@ function seek(delta) {
     clearTimeout(seekTimer);
     seekTimer = setTimeout(() => {
       seekTimer = null;
-      tabPlayer.playVideo();
-      if (audioPlayer) audioPlayer.playVideo();
+      if (introActive) {
+        audioPlayer.playVideo();
+        startIntroWatch();
+        setStatus('Intro…');
+      } else {
+        tabPlayer.playVideo();
+        if (audioPlayer) audioPlayer.playVideo();
+        setStatus('Playing');
+      }
       isPlaying = true;
       elPlayPause.textContent = '⏸';
-      setStatus('Playing');
     }, SEEK_RESUME_DELAY);
   }
 }

@@ -29,9 +29,8 @@ Works for any tab-based practice: bass, guitar, or otherwise.
 | `title`        | string         | Required                   |
 | `artist`       | string         | Required                   |
 | `tabVideoId`   | string         | YouTube video ID, required |
-| `tabStart`     | number         | Seconds, 0.1s precision    |
 | `audioVideoId` | string \| null | YouTube video ID, optional |
-| `audioStart`   | number         | Seconds, 0.1s precision    |
+| `syncOffset`   | number         | Seconds audio leads the tab. Positive = audio has an intro the tab omits (audio plays alone until offset, then tab starts). Negative = tab starts mid-song (tab seeks to \|offset\|, audio starts at 0). 0 = in sync from the start. |
 | `folderId`     | string \| null | Reference to a Folder id   |
 | `favourite`    | boolean        |                            |
 | `difficulty`   | 1–5 \| null    |                            |
@@ -55,7 +54,7 @@ All data stored under a single `localStorage` key as a versioned JSON envelope:
 
 ```json
 {
-  "version": 2,
+  "version": 3,
   "tracks": [...],
   "folders": [...]
 }

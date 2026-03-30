@@ -4,7 +4,7 @@
 import { uuid } from './utils.js';
 
 const STORAGE_KEY = 'tabsync-library';
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 /**
  * @typedef {Object} Track
@@ -12,9 +12,9 @@ const SCHEMA_VERSION = 2;
  * @property {string}      title
  * @property {string}      artist
  * @property {string}      tabVideoId
- * @property {number}      tabStart       - seconds (0.1s precision)
  * @property {string|null} audioVideoId
- * @property {number}      audioStart     - seconds (0.1s precision)
+ * @property {number}      syncOffset     - seconds audio leads the tab (positive = audio has intro;
+ *                                          negative = tab starts mid-song; 0 = in sync from start)
  * @property {string|null} folderId
  * @property {boolean}     favourite
  * @property {number|null} difficulty     - 1–5
@@ -44,6 +44,14 @@ function migrate(data) {
       'countIn' in t ? t : { ...t, countIn: null }
     );
     data.version = 2;
+  }
+  if (data.version < 3) {
+    data.tracks = (data.tracks ?? []).map(t => {
+      const { tabStart, audioStart, ...rest } = t;
+      const syncOffset = (audioStart || 0) - (tabStart || 0);
+      return { ...rest, syncOffset };
+    });
+    data.version = 3;
   }
   return data;
 }

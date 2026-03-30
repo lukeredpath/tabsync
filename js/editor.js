@@ -18,9 +18,8 @@ export function initEditorComponent(Alpine) {
     title: '',
     artist: '',
     tabUrl: '',
-    tabStart: 0,
     audioUrl: '',
-    audioStart: 0,
+    syncOffset: 0,
     folderId: '',
     newFolderName: '',
     selectedDifficulty: null,
@@ -54,8 +53,8 @@ export function initEditorComponent(Alpine) {
     _snapshot() {
       return JSON.stringify({
         title: this.title, artist: this.artist,
-        tabUrl: this.tabUrl, tabStart: parseFloat(this.tabStart) || 0,
-        audioUrl: this.audioUrl, audioStart: parseFloat(this.audioStart) || 0,
+        tabUrl: this.tabUrl,
+        audioUrl: this.audioUrl, syncOffset: parseFloat(this.syncOffset) || 0,
         folder: this.folderId, difficulty: this.selectedDifficulty,
         favourite: this.isFavourite, countIn: this.trackCountIn,
       });
@@ -79,10 +78,9 @@ export function initEditorComponent(Alpine) {
       this.title             = track?.title ?? '';
       this.artist            = track?.artist ?? '';
       this.tabUrl            = track ? `https://www.youtube.com/watch?v=${track.tabVideoId}` : '';
-      this.tabStart          = track?.tabStart ?? 0;
       this.audioUrl          = track?.audioVideoId
         ? `https://www.youtube.com/watch?v=${track.audioVideoId}` : '';
-      this.audioStart        = track?.audioStart ?? 0;
+      this.syncOffset        = track?.syncOffset ?? 0;
       this.folderId          = track?.folderId ?? '';
       this.selectedDifficulty = track?.difficulty ?? null;
       this.isFavourite       = track?.favourite ?? false;
@@ -191,13 +189,13 @@ export function initEditorComponent(Alpine) {
         resolvedFolderId = folder.id;
       }
 
+      const audioVideoId = this.audioUrl.trim() ? extractVideoId(this.audioUrl.trim()) : null;
       const fields = {
         title:        this.title.trim(),
         artist:       this.artist.trim(),
         tabVideoId:   extractVideoId(this.tabUrl.trim()),
-        tabStart:     parseFloat(this.tabStart) || 0,
-        audioVideoId: this.audioUrl.trim() ? extractVideoId(this.audioUrl.trim()) : null,
-        audioStart:   parseFloat(this.audioStart) || 0,
+        audioVideoId,
+        syncOffset:   audioVideoId ? (parseFloat(this.syncOffset) || 0) : 0,
         folderId:     resolvedFolderId,
         favourite:    this.isFavourite,
         difficulty:   this.selectedDifficulty,
