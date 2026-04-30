@@ -20,6 +20,7 @@ export function initEditorComponent(Alpine) {
     tabUrl: '',
     audioUrl: '',
     syncOffset: 0,
+    audioPosition: 'bottom-right',
     folderId: '',
     newFolderName: '',
     selectedDifficulty: null,
@@ -55,6 +56,7 @@ export function initEditorComponent(Alpine) {
         title: this.title, artist: this.artist,
         tabUrl: this.tabUrl,
         audioUrl: this.audioUrl, syncOffset: parseFloat(this.syncOffset) || 0,
+        audioPosition: this.audioPosition,
         folder: this.folderId, difficulty: this.selectedDifficulty,
         favourite: this.isFavourite, countIn: this.trackCountIn,
       });
@@ -81,6 +83,7 @@ export function initEditorComponent(Alpine) {
       this.audioUrl          = track?.audioVideoId
         ? `https://www.youtube.com/watch?v=${track.audioVideoId}` : '';
       this.syncOffset        = track?.syncOffset ?? 0;
+      this.audioPosition     = track?.audioPosition ?? 'bottom-right';
       this.folderId          = track?.folderId ?? '';
       this.selectedDifficulty = track?.difficulty ?? null;
       this.isFavourite       = track?.favourite ?? false;
@@ -196,6 +199,7 @@ export function initEditorComponent(Alpine) {
         tabVideoId:   extractVideoId(this.tabUrl.trim()),
         audioVideoId,
         syncOffset:   audioVideoId ? (parseFloat(this.syncOffset) || 0) : 0,
+        audioPosition: this.audioPosition,
         folderId:     resolvedFolderId,
         favourite:    this.isFavourite,
         difficulty:   this.selectedDifficulty,

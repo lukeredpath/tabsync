@@ -1,6 +1,8 @@
 // ── Player ──
 // YouTube IFrame API wrapper and sync engine.
 
+import { updateTrack } from './library.js';
+
 // ── Constants ──
 
 const SEEK_DELTA         = 5;    // seconds per skip-back / skip-forward
@@ -40,12 +42,25 @@ let introTimer  = null;   // setInterval handle for intro-phase polling
 
 const COUNT_IN_KEY = 'tabsync-count-in';
 
+const AUDIO_POSITIONS = ['bottom-right', 'bottom-left', 'top-left', 'top-right'];
+
 let drag = { active: false, startX: 0, startY: 0, origX: 0, origY: 0 };
 
 // Cached DOM refs (set in initPlayer)
-let elStatus, elPlayPause, elRewind, elSkipBack, elSkipFwd, elAudioContainer;
+let elStatus, elPlayPause, elRewind, elSkipBack, elSkipFwd, elAudioContainer, elAudioPositionSelect;
 let elCountInBtn, elCountdownOverlay, elCountdownNumber;
 let elSpeedSelect;
+
+// ── Audio position ──
+
+function applyAudioPosition(pos) {
+  AUDIO_POSITIONS.forEach(p => elAudioContainer.classList.remove(`pos-${p}`));
+  // Clear any position set by the drag handler so the class takes effect
+  elAudioContainer.style.left = elAudioContainer.style.top =
+    elAudioContainer.style.right = elAudioContainer.style.bottom = '';
+  elAudioContainer.classList.add(`pos-${pos}`);
+  if (elAudioPositionSelect) elAudioPositionSelect.value = pos;
+}
 
 // ── Helpers ──
 
@@ -145,6 +160,8 @@ function loadTrack(track) {
 
   // Show/hide audio overlay
   elAudioContainer.hidden = !hasAudio;
+  elAudioPositionSelect.disabled = !hasAudio;
+  if (hasAudio) applyAudioPosition(track.audioPosition ?? 'bottom-right');
 
   // Hide the placeholder and replace any existing tab player div
   const tabContainer = document.getElementById('tab-container');
@@ -476,7 +493,8 @@ export function initPlayer() {
   elRewind           = document.getElementById('rewind-btn');
   elSkipBack         = document.getElementById('skip-back-btn');
   elSkipFwd          = document.getElementById('skip-fwd-btn');
-  elAudioContainer   = document.getElementById('audio-container');
+  elAudioContainer      = document.getElementById('audio-container');
+  elAudioPositionSelect = document.getElementById('audio-position-select');
   elCountInBtn       = document.getElementById('count-in-btn');
   elCountdownOverlay = document.getElementById('countdown-overlay');
   elCountdownNumber  = document.getElementById('countdown-number');
@@ -526,6 +544,16 @@ export function initPlayer() {
     }
   });
 
+  // Audio position select — saves the chosen corner to the current track
+  elAudioPositionSelect.addEventListener('change', () => {
+    if (!currentTrack) return;
+    const pos = elAudioPositionSelect.value;
+    const updated = updateTrack(currentTrack.id, { audioPosition: pos });
+    currentTrack = updated;
+    applyAudioPosition(pos);
+    document.dispatchEvent(new CustomEvent('tabsync:library-changed'));
+  });
+
   // Draggable audio overlay — listeners registered/removed per-drag to avoid
   // firing on every mouse/touch move globally
   elAudioContainer.addEventListener('mousedown', onMouseDragStart);
@@ -541,13 +569,16 @@ export function initPlayer() {
     loadTrack(e.detail);
   });
 
-  // Track data updated (e.g. start offsets changed in editor) — refresh cached
-  // reference so the next Restart uses the new offsets without reloading video
+  // Track data updated (e.g. offsets or position changed in editor) — refresh
+  // cached reference and update any live overlay state
   document.addEventListener('tabsync:track-updated', e => {
     if (currentTrack && currentTrack.id === e.detail.id) {
       currentTrack = e.detail;
       effectiveCountIn = resolveCountIn(currentTrack);
       elCountInBtn.classList.toggle('active', effectiveCountIn);
+      if (currentTrack.audioVideoId) {
+        applyAudioPosition(currentTrack.audioPosition ?? 'bottom-right');
+      }
     }
   });
 

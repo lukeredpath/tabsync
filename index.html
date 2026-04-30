@@ -202,6 +202,12 @@
           <option value="1.25">1.25×</option>
         </select>
         <button class="ctrl-btn" id="count-in-btn" title="Count-in: play after a 3-second countdown">Count In</button>
+        <select id="audio-position-select" title="Audio overlay position" aria-label="Audio overlay position" disabled>
+          <option value="bottom-right">Overlay: bottom right</option>
+          <option value="bottom-left">Overlay: bottom left</option>
+          <option value="top-right">Overlay: top right</option>
+          <option value="top-left">Overlay: top left</option>
+        </select>
       </div>
       <div id="transport">
         <button class="ctrl-btn transport-btn" id="rewind-btn" disabled title="Restart (R)">&#x21A9;</button>
@@ -282,6 +288,15 @@
               Set to a positive value when the audio has an intro the tab recording omits
               (e.g. 30 if the bass only enters 30 seconds in). Negative shifts the tab video start
               forward instead.</p>
+          </div>
+          <div class="field-group">
+            <label for="ef-audio-position">Overlay position</label>
+            <select id="ef-audio-position" x-model="audioPosition" class="input--narrow">
+              <option value="bottom-right">Bottom right</option>
+              <option value="bottom-left">Bottom left</option>
+              <option value="top-right">Top right</option>
+              <option value="top-left">Top left</option>
+            </select>
           </div>
         </div>
       </div>

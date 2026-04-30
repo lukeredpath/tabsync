@@ -4,7 +4,7 @@
 import { uuid } from './utils.js';
 
 const STORAGE_KEY = 'tabsync-library';
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 /**
  * @typedef {Object} Track
@@ -21,6 +21,7 @@ const SCHEMA_VERSION = 3;
  * @property {string}      createdAt      - ISO timestamp
  * @property {string}      updatedAt      - ISO timestamp
  * @property {boolean|null} countIn       - null = follow global toggle
+ * @property {'bottom-right'|'bottom-left'|'top-left'|'top-right'} audioPosition
  */
 
 /**
@@ -52,6 +53,12 @@ function migrate(data) {
       return { ...rest, syncOffset };
     });
     data.version = 3;
+  }
+  if (data.version < 4) {
+    data.tracks = (data.tracks ?? []).map(t =>
+      'audioPosition' in t ? t : { ...t, audioPosition: 'bottom-right' }
+    );
+    data.version = 4;
   }
   return data;
 }
@@ -90,7 +97,7 @@ export function getLibrary() {
 export function createTrack(fields) {
   const data = load();
   const now = new Date().toISOString();
-  const track = { ...fields, id: uuid(), createdAt: now, updatedAt: now };
+  const track = { audioPosition: 'bottom-right', ...fields, id: uuid(), createdAt: now, updatedAt: now };
   data.tracks.push(track);
   save(data);
   return track;

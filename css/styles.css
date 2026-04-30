@@ -487,8 +487,6 @@ body.sidebar-collapsed #sidebar-open-btn {
 /* ── Audio overlay ── */
 #audio-container {
   position: absolute;
-  bottom: 72px;
-  right: 16px;
   width: 240px;
   aspect-ratio: 16 / 9;
   border: 2px solid #555;
@@ -501,6 +499,11 @@ body.sidebar-collapsed #sidebar-open-btn {
 }
 
 #audio-container[hidden] { display: none; }
+
+#audio-container.pos-bottom-right { bottom: 72px; right: 16px; }
+#audio-container.pos-bottom-left  { bottom: 72px; left:  16px; }
+#audio-container.pos-top-right    { top:  8px;    right: 16px; }
+#audio-container.pos-top-left     { top:  8px;    left:  16px; }
 
 #audio-player-wrapper,
 #audio-player-wrapper > div {
@@ -527,6 +530,7 @@ body.sidebar-collapsed #sidebar-open-btn {
   pointer-events: none;
   z-index: 1;
 }
+
 
 /* ── Controls bar ── */
 #controls {
@@ -984,7 +988,8 @@ kbd {
 }
 
 /* ── Speed select (controls bar) ── */
-#speed-select {
+#speed-select,
+#audio-position-select {
   background: var(--surface-alt);
   border: 1px solid var(--border-mid);
   border-radius: 6px;
@@ -995,7 +1000,9 @@ kbd {
   font-family: inherit;
 }
 
-#speed-select:focus { outline: none; border-color: var(--accent); }
+#speed-select:focus,
+#audio-position-select:focus { outline: none; border-color: var(--accent); }
+#audio-position-select:disabled { opacity: 0.35; cursor: default; }
 
 /* ── Responsive layout ── */
 @media (max-width: 768px) {
