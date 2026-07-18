@@ -18,8 +18,9 @@ export function initEditorComponent(Alpine) {
     title: '',
     artist: '',
     tabUrl: '',
+    tabStart: 0,
     audioUrl: '',
-    syncOffset: 0,
+    audioStart: 0,
     audioPosition: 'bottom-right',
     folderId: '',
     newFolderName: '',
@@ -54,8 +55,8 @@ export function initEditorComponent(Alpine) {
     _snapshot() {
       return JSON.stringify({
         title: this.title, artist: this.artist,
-        tabUrl: this.tabUrl,
-        audioUrl: this.audioUrl, syncOffset: parseFloat(this.syncOffset) || 0,
+        tabUrl: this.tabUrl, tabStart: parseFloat(this.tabStart) || 0,
+        audioUrl: this.audioUrl, audioStart: parseFloat(this.audioStart) || 0,
         audioPosition: this.audioPosition,
         folder: this.folderId, difficulty: this.selectedDifficulty,
         favourite: this.isFavourite, countIn: this.trackCountIn,
@@ -80,9 +81,10 @@ export function initEditorComponent(Alpine) {
       this.title             = track?.title ?? '';
       this.artist            = track?.artist ?? '';
       this.tabUrl            = track ? `https://www.youtube.com/watch?v=${track.tabVideoId}` : '';
+      this.tabStart          = track?.tabStart ?? 0;
       this.audioUrl          = track?.audioVideoId
         ? `https://www.youtube.com/watch?v=${track.audioVideoId}` : '';
-      this.syncOffset        = track?.syncOffset ?? 0;
+      this.audioStart        = track?.audioStart ?? 0;
       this.audioPosition     = track?.audioPosition ?? 'bottom-right';
       this.folderId          = track?.folderId ?? '';
       this.selectedDifficulty = track?.difficulty ?? null;
@@ -197,8 +199,9 @@ export function initEditorComponent(Alpine) {
         title:        this.title.trim(),
         artist:       this.artist.trim(),
         tabVideoId:   extractVideoId(this.tabUrl.trim()),
+        tabStart:     parseFloat(this.tabStart) || 0,
         audioVideoId,
-        syncOffset:   audioVideoId ? (parseFloat(this.syncOffset) || 0) : 0,
+        audioStart:   audioVideoId ? (parseFloat(this.audioStart) || 0) : 0,
         audioPosition: this.audioPosition,
         folderId:     resolvedFolderId,
         favourite:    this.isFavourite,

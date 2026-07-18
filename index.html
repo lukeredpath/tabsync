@@ -196,10 +196,12 @@
     <div id="controls" role="toolbar" aria-label="Playback controls">
       <div id="controls-left">
         <select id="speed-select" title="Playback speed" aria-label="Playback speed">
-          <option value="0.5">0.5×</option>
-          <option value="0.75">0.75×</option>
-          <option value="1" selected>1×</option>
-          <option value="1.25">1.25×</option>
+          <option value="0.5">50%</option>
+          <option value="0.6">60%</option>
+          <option value="0.7">70%</option>
+          <option value="0.8">80%</option>
+          <option value="0.9">90%</option>
+          <option value="1" selected>100%</option>
         </select>
         <button class="ctrl-btn" id="count-in-btn" title="Count-in: play after a 3-second countdown">Count In</button>
         <select id="audio-position-select" title="Audio overlay position" aria-label="Audio overlay position" disabled>
@@ -261,6 +263,11 @@
             @blur="handleTabUrlBlur()" />
           <div class="oembed-status" :class="tabOembedType" x-text="tabOembedMsg"></div>
         </div>
+        <div class="field-group">
+          <label for="ef-tab-start">Tab start time (seconds)</label>
+          <input type="number" id="ef-tab-start" x-model="tabStart"
+            min="0" step="0.1" class="input--narrow" />
+        </div>
       </div>
 
       <div class="form-section">
@@ -281,13 +288,12 @@
             <div class="oembed-status" :class="audioOembedType" x-text="audioOembedMsg"></div>
           </div>
           <div class="field-group">
-            <label for="ef-sync-offset">Sync offset (seconds)</label>
-            <input type="number" id="ef-sync-offset" x-model="syncOffset"
-              step="0.1" class="input--narrow" />
-            <p class="field-hint">How many seconds of the audio track play before the tab video starts.
-              Set to a positive value when the audio has an intro the tab recording omits
-              (e.g. 30 if the bass only enters 30 seconds in). Negative shifts the tab video start
-              forward instead.</p>
+            <label for="ef-audio-start">Audio start time (seconds)</label>
+            <input type="number" id="ef-audio-start" x-model="audioStart"
+              min="0" step="0.1" class="input--narrow" />
+            <p class="field-hint">Enter how many seconds into each video the song actually starts —
+              leave at 0 if a video starts right at the song. The two are used together to keep
+              the videos in sync.</p>
           </div>
           <div class="field-group">
             <label for="ef-audio-position">Overlay position</label>

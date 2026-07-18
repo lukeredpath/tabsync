@@ -37,7 +37,7 @@ test.beforeEach(async ({ page }) => {
 
 test('restarting during playback re-seeks and resumes the audio player, not just the tab player', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist', { audioVideoId: 'dQw4w9WgXcQ' })],
     folders: [],
   });

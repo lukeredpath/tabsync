@@ -19,7 +19,7 @@ test('audio position defaults to bottom-right in add track form', async ({ page 
 
 test('editor pre-populates audio position from existing track', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist', {
       audioVideoId: 'dQw4w9WgXcQ',
       audioPosition: 'top-left',
@@ -37,7 +37,7 @@ test('editor pre-populates audio position from existing track', async ({ page })
 
 test('saving audio position from editor persists to localStorage', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist', {
       audioVideoId: 'dQw4w9WgXcQ',
       audioPosition: 'bottom-right',
@@ -68,7 +68,7 @@ test('schema migration adds audioPosition: bottom-right to v3 tracks on save', a
       tracks: [{
         id: 't1', title: 'Test Track', artist: 'Test Artist',
         tabVideoId: 'dQw4w9WgXcQ', audioVideoId: 'dQw4w9WgXcQ',
-        syncOffset: 0, folderId: null, favourite: false,
+        syncOffset: 12, folderId: null, favourite: false,
         difficulty: null, countIn: null,
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       }],
@@ -87,10 +87,20 @@ test('schema migration adds audioPosition: bottom-right to v3 tracks on save', a
 
   const saved = await page.evaluate(() => {
     const lib = JSON.parse(localStorage.getItem('tabsync-library') ?? '{}');
-    return { version: lib.version, audioPosition: lib.tracks?.[0]?.audioPosition };
+    return {
+      version: lib.version,
+      audioPosition: lib.tracks?.[0]?.audioPosition,
+      tabStart: lib.tracks?.[0]?.tabStart,
+      audioStart: lib.tracks?.[0]?.audioStart,
+      syncOffset: lib.tracks?.[0]?.syncOffset,
+    };
   });
-  expect(saved.version).toBe(4);
+  expect(saved.version).toBe(5);
   expect(saved.audioPosition).toBe('bottom-right');
+  // syncOffset: 12 (audio leads) should split as tabStart: 0, audioStart: 12
+  expect(saved.tabStart).toBe(0);
+  expect(saved.audioStart).toBe(12);
+  expect(saved.syncOffset).toBeUndefined();
 });
 
 // ── Controls bar ── (these require the YouTube API stub to reach Ready state)
@@ -102,7 +112,7 @@ test('controls bar overlay select is disabled when no track is loaded', async ({
 
 test('controls bar overlay select is disabled for tab-only tracks', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist')], // no audioVideoId
     folders: [],
   });
@@ -114,7 +124,7 @@ test('controls bar overlay select is disabled for tab-only tracks', async ({ pag
 
 test('controls bar overlay select is enabled when audio track is loaded', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist', { audioVideoId: 'dQw4w9WgXcQ' })],
     folders: [],
   });
@@ -126,7 +136,7 @@ test('controls bar overlay select is enabled when audio track is loaded', async 
 
 test('controls bar overlay select reflects the track audioPosition', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist', {
       audioVideoId: 'dQw4w9WgXcQ',
       audioPosition: 'top-right',
@@ -141,7 +151,7 @@ test('controls bar overlay select reflects the track audioPosition', async ({ pa
 
 test('controls bar overlay select applies the correct CSS class to the audio container', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist', {
       audioVideoId: 'dQw4w9WgXcQ',
       audioPosition: 'bottom-left',
@@ -156,7 +166,7 @@ test('controls bar overlay select applies the correct CSS class to the audio con
 
 test('changing overlay position via controls bar persists to localStorage', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist', {
       audioVideoId: 'dQw4w9WgXcQ',
       audioPosition: 'bottom-right',
@@ -178,7 +188,7 @@ test('changing overlay position via controls bar persists to localStorage', asyn
 
 test('changing overlay position via controls bar updates the audio container class', async ({ page }) => {
   await seedLibrary(page, {
-    version: 4,
+    version: 5,
     tracks: [makeTrack('t1', 'Test Track', 'Test Artist', {
       audioVideoId: 'dQw4w9WgXcQ',
       audioPosition: 'bottom-right',

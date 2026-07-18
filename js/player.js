@@ -37,7 +37,7 @@ let countInTimer   = null;
 
 let seekTimer = null;
 
-let introActive = false;  // true while audio plays intro before tab starts (syncOffset > 0)
+let introActive = false;  // true while audio plays intro before tab starts (audioStart > tabStart)
 let introTimer  = null;   // setInterval handle for intro-phase polling
 
 const COUNT_IN_KEY = 'tabsync-count-in';
@@ -72,13 +72,19 @@ function resolveCountIn(track) {
   return (track?.countIn != null) ? track.countIn : countInEnabled;
 }
 
+// Positive = audio's song-start lags the tab's (audio plays its own intro first);
+// negative = tab's song-start lags the audio's (tab seeks forward to skip its intro).
+function getSyncOffset(track) {
+  return (track?.audioStart ?? 0) - (track?.tabStart ?? 0);
+}
+
 // ── Intro-phase helpers ──
 
 function startIntroWatch() {
   clearIntroWatch();
   introTimer = setInterval(() => {
     if (!audioPlayer || !isPlaying || !introActive) { clearIntroWatch(); return; }
-    const offset = currentTrack?.syncOffset ?? 0;
+    const offset = getSyncOffset(currentTrack);
     if (audioPlayer.getCurrentTime() >= offset) {
       clearIntroWatch();
       introActive = false;
@@ -177,7 +183,7 @@ function loadTrack(track) {
     document.getElementById('audio-player-wrapper').innerHTML = '<div id="audio-player"></div>';
   }
 
-  const syncOffset = track.syncOffset ?? 0;
+  const syncOffset = getSyncOffset(track);
   // Tab seeks to |syncOffset| when audio leads (syncOffset < 0); otherwise starts at 0.
   const tabStartPos = Math.max(0, Math.floor(-syncOffset));
 
@@ -227,7 +233,7 @@ function makeOnReady(capturedLoadId) {
     if (playersReady < playersNeeded) return; // wait for the other player
 
     // Both (or the only) player is ready — seek to start positions
-    const offset = currentTrack.syncOffset ?? 0;
+    const offset = getSyncOffset(currentTrack);
     tabPlayer.seekTo(Math.max(0, -offset), true);
     tabPlayer.pauseVideo();
     tabPlayer.setPlaybackRate(playbackRate);
@@ -251,7 +257,7 @@ const RESYNC_THRESHOLD = 1.0; // seconds of drift before resyncing audio
 function resyncAudio() {
   if (!audioPlayer || !currentTrack || introActive) return;
   const tabTime = tabPlayer.getCurrentTime();
-  const audioTarget = tabTime + (currentTrack.syncOffset ?? 0);
+  const audioTarget = tabTime + getSyncOffset(currentTrack);
   if (Math.abs(audioPlayer.getCurrentTime() - audioTarget) < RESYNC_THRESHOLD) return;
   audioPlayer.seekTo(audioTarget, true);
 }
@@ -377,7 +383,7 @@ function restart() {
   const wasPlaying = isPlaying;
   pause();
   atStart = true;
-  const offset = currentTrack.syncOffset ?? 0;
+  const offset = getSyncOffset(currentTrack);
   tabPlayer.seekTo(Math.max(0, -offset), true);
   if (audioPlayer) {
     audioPlayer.seekTo(0, true);
@@ -409,7 +415,7 @@ function seek(delta) {
     // During intro: move audio; exit intro if we've seeked past the sync point.
     const newAudioTime = (audioPlayer.getCurrentTime() || 0) + delta;
     audioPlayer.seekTo(Math.max(0, newAudioTime), true);
-    const offset = currentTrack?.syncOffset ?? 0;
+    const offset = getSyncOffset(currentTrack);
     if (newAudioTime >= offset) {
       introActive = false;
       tabPlayer.seekTo(Math.max(0, newAudioTime - offset), true);

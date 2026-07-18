@@ -4,7 +4,7 @@
 import { uuid } from './utils.js';
 
 const STORAGE_KEY = 'tabsync-library';
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 /**
  * @typedef {Object} Track
@@ -12,9 +12,9 @@ const SCHEMA_VERSION = 4;
  * @property {string}      title
  * @property {string}      artist
  * @property {string}      tabVideoId
+ * @property {number}      tabStart       - seconds into the tab video where the song starts
  * @property {string|null} audioVideoId
- * @property {number}      syncOffset     - seconds audio leads the tab (positive = audio has intro;
- *                                          negative = tab starts mid-song; 0 = in sync from start)
+ * @property {number}      audioStart     - seconds into the audio video where the song starts
  * @property {string|null} folderId
  * @property {boolean}     favourite
  * @property {number|null} difficulty     - 1–5
@@ -60,6 +60,16 @@ function migrate(data) {
     );
     data.version = 4;
   }
+  if (data.version < 5) {
+    data.tracks = (data.tracks ?? []).map(t => {
+      if (!('syncOffset' in t)) return t;
+      const { syncOffset, ...rest } = t;
+      const offset = syncOffset || 0;
+      const [tabStart, audioStart] = offset < 0 ? [-offset, 0] : [0, offset];
+      return { ...rest, tabStart, audioStart };
+    });
+    data.version = 5;
+  }
   return data;
 }
 
@@ -69,7 +79,10 @@ function load() {
     if (!raw) return empty();
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return empty();
-    return migrate(parsed);
+    const originalVersion = parsed.version;
+    const migrated = migrate(parsed);
+    if (migrated.version !== originalVersion) save(migrated);
+    return migrated;
   } catch {
     return empty();
   }
@@ -97,7 +110,7 @@ export function getLibrary() {
 export function createTrack(fields) {
   const data = load();
   const now = new Date().toISOString();
-  const track = { audioPosition: 'bottom-right', ...fields, id: uuid(), createdAt: now, updatedAt: now };
+  const track = { audioPosition: 'bottom-right', tabStart: 0, audioStart: 0, ...fields, id: uuid(), createdAt: now, updatedAt: now };
   data.tracks.push(track);
   save(data);
   return track;

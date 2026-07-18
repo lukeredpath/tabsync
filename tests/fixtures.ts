@@ -5,8 +5,9 @@ export interface Track {
   title: string;
   artist: string;
   tabVideoId: string;
+  tabStart: number;
   audioVideoId: string | null;
-  syncOffset: number;
+  audioStart: number;
   audioPosition: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   folderId: string | null;
   favourite: boolean;
@@ -34,8 +35,9 @@ export function makeTrack(id: string, title: string, artist: string, overrides: 
     title,
     artist,
     tabVideoId: 'dQw4w9WgXcQ',
+    tabStart: 0,
     audioVideoId: null,
-    syncOffset: 0,
+    audioStart: 0,
     audioPosition: 'bottom-right',
     folderId: null,
     favourite: false,
@@ -52,7 +54,7 @@ export function makeFolder(id: string, name: string): Folder {
 }
 
 export const defaultLibrary: Library = {
-  version: 4,
+  version: 5,
   tracks: [
     makeTrack('track-1', 'Comfortably Numb', 'Pink Floyd', { favourite: true }),
     makeTrack('track-2', 'Smoke on the Water', 'Deep Purple', { folderId: 'folder-1' }),

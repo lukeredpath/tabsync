@@ -29,14 +29,18 @@ Works for any tab-based practice: bass, guitar, or otherwise.
 | `title`        | string         | Required                   |
 | `artist`       | string         | Required                   |
 | `tabVideoId`   | string         | YouTube video ID, required |
+| `tabStart`     | number         | Seconds into the tab video where the song starts. 0 = starts immediately. |
 | `audioVideoId` | string \| null | YouTube video ID, optional |
-| `syncOffset`   | number         | Seconds audio leads the tab. Positive = audio has an intro the tab omits (audio plays alone until offset, then tab starts). Negative = tab starts mid-song (tab seeks to \|offset\|, audio starts at 0). 0 = in sync from the start. |
+| `audioStart`   | number         | Seconds into the audio video where the song starts. 0 = starts immediately. |
+| `audioPosition` | 'bottom-right' \| 'bottom-left' \| 'top-left' \| 'top-right' | Overlay corner for the audio player |
 | `folderId`     | string \| null | Reference to a Folder id   |
 | `favourite`    | boolean        |                            |
 | `difficulty`   | 1–5 \| null    |                            |
 | `countIn`      | boolean \| null | null = follow global setting |
 | `createdAt`    | ISO timestamp  |                            |
 | `updatedAt`    | ISO timestamp  |                            |
+
+At playback time, `tabStart` and `audioStart` are combined into a single sync offset (`audioStart - tabStart`) that drives the player: if the audio's song-start lags the tab's, the audio plays through its own intro first and the tab is delayed until it catches up; if the tab's song-start lags the audio's, the tab seeks forward to skip its own intro instead.
 
 ### Folder
 
@@ -54,13 +58,13 @@ All data stored under a single `localStorage` key as a versioned JSON envelope:
 
 ```json
 {
-  "version": 3,
+  "version": 5,
   "tracks": [...],
   "folders": [...]
 }
 ```
 
-Schema version is checked on load; a migration path is defined for future version bumps.
+Schema version is checked on load; a migration path is defined for future version bumps. Migrated data is written straight back to `localStorage` on load, so tracks upgrade to the current schema as soon as the app is opened, not just when individually edited.
 
 ---
 
@@ -77,8 +81,8 @@ Schema version is checked on load; a migration path is defined for future versio
 
 ### Track editor / add form
 
-- Fields for title, artist, tab video URL, tab start offset, audio video URL (optional), audio start offset.
-- Start offsets accept decimal values to 0.1s precision (YouTube's `seekTo` supports fractional seconds).
+- Fields for title, artist, tab video URL, tab start time, audio video URL (optional), audio start time.
+- Start times accept decimal values to 0.1s precision (YouTube's `seekTo` supports fractional seconds).
 - When a YouTube URL is entered, auto-fetch title and artist via oEmbed and pre-populate the form fields. User can override.
 - Validation: tab video URL is required; audio URL is optional but if provided must be a valid YouTube URL.
 
