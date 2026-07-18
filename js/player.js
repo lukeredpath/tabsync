@@ -383,7 +383,16 @@ function restart() {
     audioPlayer.seekTo(0, true);
     introActive = offset > 0;
   }
-  if (wasPlaying) togglePlay();
+  if (wasPlaying) {
+    // Brief delay lets the IFrame API's internal queue settle before resuming
+    // (see seek() below) — resuming immediately after seekTo() can leave the
+    // audio player paused instead of restarting it.
+    clearTimeout(seekTimer);
+    seekTimer = setTimeout(() => {
+      seekTimer = null;
+      togglePlay();
+    }, SEEK_RESUME_DELAY);
+  }
 }
 
 function seek(delta) {
@@ -501,7 +510,9 @@ export function initPlayer() {
   elSpeedSelect      = document.getElementById('speed-select');
 
   // Speed (persisted)
-  playbackRate = parseFloat(localStorage.getItem(SPEED_KEY)) || 1.0;
+  const storedRate = parseFloat(localStorage.getItem(SPEED_KEY)) || 1.0;
+  const validRates = Array.from(elSpeedSelect.options).map(o => parseFloat(o.value));
+  playbackRate = validRates.includes(storedRate) ? storedRate : 1.0;
   elSpeedSelect.value = String(playbackRate);
   elSpeedSelect.addEventListener('change', e => setSpeed(parseFloat(e.target.value)));
 
