@@ -10,3 +10,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Throwaway research/spike work — never tracked
+/.claude-research/
