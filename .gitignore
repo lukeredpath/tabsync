@@ -1,6 +1,7 @@
 .server.pid
 .deleted/
 .claude/settings.local.json
+.DS_Store
 
 # Playwright
 node_modules/
